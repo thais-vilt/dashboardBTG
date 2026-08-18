@@ -1,0 +1,2422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard de Programa BTG</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+:root {
+  --bg       : #0D0E14;
+  --surface  : #13141D;
+  --surface2 : #1A1C28;
+  --surface3 : #222436;
+  --surface4 : #2A2D42;
+
+  --border   : rgba(255,255,255,0.07);
+  --border2  : rgba(255,255,255,0.13);
+
+  --text     : #FFFFFF;
+  --text2    : #B0B8D4;
+  --text3    : #6B75A0;
+
+  --r        : 12px;
+  --r-sm     : 7px;
+  --r-xs     : 5px;
+  --font     : 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* BTG brand */
+  --btg      : #0052CC;
+  --btg-lt   : #1A6DFF;
+  --btg-dark : #003A99;
+  --btg-xlt  : rgba(0,82,204,0.18);
+  --btg-glow : rgba(26,109,255,0.25);
+
+  --gold     : #FFB800;
+  --gold-lt  : rgba(255,184,0,0.15);
+  --gold-txt : #7A5800;
+
+  --green    : #00C87A;
+  --green-lt : rgba(0,200,122,0.14);
+
+  --red      : #FF4D6A;
+  --red-lt   : rgba(255,77,106,0.14);
+
+  --amber    : #FF8C00;
+  --amber-lt : rgba(255,140,0,0.14);
+
+  --purple   : #8B5CF6;
+  --purple-lt: rgba(139,92,246,0.14);
+
+  /* status */
+  --s-done-bg : rgba(0,200,122,0.14);  --s-done-tx : #00C87A;
+  --s-prog-bg : rgba(0,82,204,0.18);   --s-prog-tx : #5B9DFF;
+  --s-blok-bg : rgba(255,77,106,0.14); --s-blok-tx : #FF4D6A;
+  --s-pend-bg : rgba(107,117,160,0.15);--s-pend-tx : #8892C0;
+
+  /* epic colors */
+  --e0:#1A6DFF; --e0-lt:rgba(26,109,255,0.18);
+  --e1:#00C87A; --e1-lt:rgba(0,200,122,0.14);
+  --e2:#FF4D6A; --e2-lt:rgba(255,77,106,0.14);
+  --e3:#FFB800; --e3-lt:rgba(255,184,0,0.15);
+  --e4:#8B5CF6; --e4-lt:rgba(139,92,246,0.14);
+}
+
+body { font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh; font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased; }
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:var(--surface); }
+::-webkit-scrollbar-thumb { background:var(--surface4); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--btg); }
+
+/* ══ HEADER ══ */
+header {
+  background:var(--surface);
+  border-bottom:1px solid var(--border2);
+  padding:0 36px;
+  display:flex; align-items:center; justify-content:space-between;
+  height:56px; position:sticky; top:0; z-index:60;
+  box-shadow:0 1px 0 var(--border2), 0 4px 24px rgba(0,0,0,0.4);
+}
+.logo { display:flex; align-items:center; gap:12px; text-decoration:none; }
+.logo-mark { width:auto; height:34px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:#fff; border-radius:7px; padding:5px 10px; }
+.logo-mark img { height:100%; width:auto; display:block; }
+.logo-text { display:flex; align-items:center; gap:0; }
+.logo-name { font-weight:900; font-size:15px; color:#fff; letter-spacing:0.01em; line-height:1; }
+.logo-sep  { font-size:14px; color:rgba(255,255,255,0.20); margin:0 10px; font-weight:300; }
+.logo-sub  { font-size:12px; font-weight:400; color:rgba(255,255,255,0.40); letter-spacing:0.01em; }
+.header-meta { font-size:11px; font-weight:500; color:var(--text3); }
+
+/* ══ TABS ══ */
+.tabs-bar {
+  background:var(--surface2);
+  border-bottom:1px solid var(--border);
+  padding:0 36px;
+  display:flex; align-items:stretch;
+  position:sticky; top:56px; z-index:59;
+  overflow-x:auto; gap:0;
+}
+.tab-btn {
+  padding:0 18px; height:44px;
+  font-size:11px; font-weight:700;
+  color:var(--text3);
+  background:none; border:none;
+  border-bottom:2px solid transparent;
+  border-top:2px solid transparent;
+  cursor:pointer;
+  display:flex; align-items:center; gap:7px;
+  transition:color .15s, border-color .15s, background .15s;
+  white-space:nowrap; flex-shrink:0;
+  text-transform:uppercase; letter-spacing:0.06em;
+}
+.tab-btn:hover:not(.active) { color:var(--text2); background:rgba(255,255,255,0.03); }
+.tab-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
+.tab-btn svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:1.6; opacity:.85; }
+
+main { padding:28px 36px 64px; max-width:1240px; margin:0 auto; }
+.view { display:none; } .view.active { display:block; }
+
+/* ══ SAVED NOTE ══ */
+.saved-note { font-size:11px; font-weight:600; color:var(--green); opacity:0; transition:opacity .3s; }
+.saved-note.show { opacity:1; }
+
+/* ══ SQUAD WIDGET ══ */
+.squad-card {
+  background:linear-gradient(135deg,#0A0C1A 0%,var(--btg-dark) 50%,var(--btg) 100%);
+  border-radius:var(--r); padding:20px 24px 16px;
+  margin-bottom:20px; border:1px solid rgba(0,82,204,0.4);
+  box-shadow:0 4px 24px rgba(0,82,204,0.20);
+}
+.squad-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.squad-title-row { display:flex; align-items:center; gap:8px; }
+.squad-title { font-size:9px; font-weight:700; color:rgba(255,255,255,0.50); text-transform:uppercase; letter-spacing:.10em; }
+.squad-title svg { width:13px; height:13px; stroke:rgba(255,255,255,0.50); fill:none; }
+.btn-add-squad { display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:6px; background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.18); cursor:pointer; color:#fff; font-size:16px; line-height:1; transition:background .15s; }
+.btn-add-squad:hover { background:rgba(255,255,255,0.22); }
+.squad-members { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+.squad-member-block { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:10px 12px; position:relative; display:flex; flex-direction:column; gap:6px; transition:background .15s; }
+.squad-member-block:hover { background:rgba(255,255,255,0.12); }
+.squad-num { font-size:10px; font-weight:700; color:rgba(255,255,255,0.30); line-height:1; font-variant-numeric:tabular-nums; }
+.squad-role-inp { font-size:10px; font-weight:700; color:rgba(255,255,255,0.60); text-transform:uppercase; letter-spacing:.07em; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.10); border-radius:5px; padding:5px 9px; width:100%; outline:none; transition:background .15s,border-color .15s; height:28px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.squad-role-inp:focus { background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.35); }
+.squad-name-inp { font-size:13px; font-weight:700; color:#fff; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.10); border-radius:5px; padding:6px 9px; width:100%; outline:none; transition:background .15s,border-color .15s; }
+.squad-name-inp:focus { background:rgba(255,255,255,0.15); border-color:var(--btg-lt); }
+.squad-remove { position:absolute; top:6px; right:7px; background:none; border:none; cursor:pointer; color:rgba(255,255,255,0.20); font-size:13px; line-height:1; padding:1px 3px; transition:color .15s; display:none; }
+.squad-member-block:hover .squad-remove { display:block; }
+.squad-remove:hover { color:var(--red); }
+.squad-save-row { display:flex; justify-content:flex-end; gap:10px; align-items:center; }
+.btn-save {
+  background:var(--gold); color:#0A0A0A; border:none;
+  border-radius:var(--r-sm); padding:8px 20px;
+  font-size:11px; font-weight:800; cursor:pointer;
+  letter-spacing:0.04em; transition:opacity .15s,transform .1s;
+  box-shadow:0 3px 12px rgba(255,184,0,0.30);
+}
+.btn-save:hover { opacity:.90; transform:translateY(-1px); }
+
+/* ══ KPI CARDS ══ */
+.dash-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+.kpi-card {
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:var(--r); padding:18px 20px;
+  position:relative; overflow:hidden;
+  transition:transform .15s,box-shadow .15s;
+}
+.kpi-card:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,82,204,0.18); }
+.kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--btg),var(--gold)); }
+.kpi-label { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; }
+.kpi-value { font-size:34px; font-weight:900; color:var(--btg-lt); line-height:1; letter-spacing:-.03em; }
+.kpi-sub { font-size:11px; color:var(--text3); margin-top:5px; }
+
+/* ══ DASH CARDS ══ */
+.dash-row { display:grid; grid-template-columns:1fr 260px; gap:16px; margin-bottom:16px; }
+.dash-card { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r); padding:20px 22px; }
+.dash-card-title { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+.dash-card-title::before { content:''; width:3px; height:14px; background:linear-gradient(180deg,var(--btg-lt),var(--gold)); border-radius:2px; flex-shrink:0; }
+.donut-legend { display:flex; flex-direction:column; gap:9px; margin-top:14px; }
+.donut-legend-item { display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--text2); }
+.donut-legend-dot { width:9px; height:9px; border-radius:2px; flex-shrink:0; margin-right:7px; }
+.epic-progress-list { display:flex; flex-direction:column; gap:13px; }
+.epl-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.epl-name { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--text); }
+.epl-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+.epl-meta { font-size:11px; color:var(--text3); }
+.epl-pct { font-size:14px; font-weight:800; color:var(--btg-lt); min-width:36px; text-align:right; letter-spacing:-.02em; }
+.epl-track { width:100%; height:7px; background:var(--surface3); border-radius:99px; overflow:hidden; }
+.epl-fill { height:100%; border-radius:99px; }
+.incr-item-edit { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.incr-item-edit:last-child { border-bottom:none; }
+.incr-num { font-size:10px; font-weight:700; color:var(--text3); min-width:22px; text-align:right; flex-shrink:0; }
+.incr-dot-edit { width:6px; height:6px; border-radius:50%; background:var(--green); flex-shrink:0; }
+.incr-text-inp { flex:1; font-size:13px; color:var(--text2); background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:3px 7px; outline:none; transition:border-color .15s,background .15s; }
+.incr-text-inp:focus { border-color:var(--btg-lt); background:var(--surface2); }
+.incr-del-btn { background:none; border:none; cursor:pointer; color:var(--text3); font-size:15px; padding:0 3px; line-height:1; transition:color .1s; flex-shrink:0; }
+.incr-del-btn:hover { color:var(--red); }
+.btn-add-incr { display:flex; align-items:center; gap:7px; padding:6px 14px; font-size:12px; font-weight:600; color:var(--btg-lt); background:var(--btg-xlt); border:1.5px dashed rgba(26,109,255,0.35); border-radius:var(--r-sm); cursor:pointer; transition:background .15s,border-color .15s; }
+.btn-add-incr:hover { background:rgba(26,109,255,0.28); border-color:var(--btg-lt); }
+.btn-add-incr svg { width:12px; height:12px; flex-shrink:0; }
+.sum-card { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; }
+.sum-label { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }
+.sum-value { font-size:30px; font-weight:900; color:var(--btg-lt); line-height:1; letter-spacing:-.03em; }
+.sum-sub { font-size:11px; color:var(--text3); margin-top:4px; }
+
+/* ══ STATUS SELECT ══ */
+.status-sel { appearance:none; -webkit-appearance:none; font-size:11px; font-weight:600; padding:4px 22px 4px 10px; border-radius:20px; border:1px solid transparent; cursor:pointer; outline:none; background-repeat:no-repeat; background-position:right 7px center; background-size:9px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23888' stroke-width='1.5'%3E%3Cpolyline points='4,6 8,10 12,6'/%3E%3C/svg%3E"); transition:opacity .1s; letter-spacing:.01em; }
+.status-sel:hover { opacity:.85; }
+.s-pendente  { background-color:var(--s-pend-bg); color:var(--s-pend-tx); border-color:rgba(107,117,160,0.2); }
+.s-progresso { background-color:var(--s-prog-bg); color:var(--s-prog-tx); border-color:rgba(0,82,204,0.3); }
+.s-concluido { background-color:var(--s-done-bg); color:var(--s-done-tx); border-color:rgba(0,200,122,0.3); }
+.s-bloqueado { background-color:var(--s-blok-bg); color:var(--s-blok-tx); border-color:rgba(255,77,106,0.3); }
+
+/* ══ BADGE ══ */
+.badge { display:inline-flex; align-items:center; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; white-space:nowrap; letter-spacing:.01em; }
+.badge-blue  { background:var(--s-prog-bg); color:var(--s-prog-tx); }
+.badge-green { background:var(--s-done-bg); color:var(--s-done-tx); }
+.badge-gray  { background:var(--s-pend-bg); color:var(--s-pend-tx); }
+.badge-red   { background:var(--s-blok-bg); color:var(--s-blok-tx); }
+
+/* ══ SE / DASH HEADER STRIP ══ */
+.se-header-strip { background:linear-gradient(135deg,#060810 0%,var(--btg-dark) 60%,var(--btg) 100%); border-radius:var(--r); padding:0; margin-bottom:18px; border:1px solid rgba(0,82,204,0.35); box-shadow:0 4px 28px rgba(0,82,204,0.22); color:#fff; overflow:hidden; }
+.se-header-main { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:18px 24px 14px; }
+.se-header-title-block { display:flex; flex-direction:column; gap:3px; }
+.se-header-eyebrow { font-size:9px; font-weight:700; color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:.09em; }
+.se-header-title { font-size:20px; font-weight:900; letter-spacing:-.02em; line-height:1.2; color:#fff; }
+.se-header-title-inp { font-size:20px; font-weight:900; letter-spacing:-.02em; color:#fff; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); border-radius:6px; padding:2px 8px; outline:none; width:340px; transition:background .15s,border-color .15s; }
+.se-header-title-inp:focus { background:rgba(255,255,255,.15); border-color:var(--gold); }
+.se-header-status { display:flex; align-items:center; gap:8px; flex-shrink:0; padding-top:4px; }
+.se-header-status-lbl { font-size:9px; font-weight:700; color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:.08em; }
+.se-meta-row { display:flex; gap:28px; flex-wrap:wrap; padding:0 24px 16px; border-top:1px solid rgba(255,255,255,.08); padding-top:12px; }
+.se-meta-item { display:flex; flex-direction:column; gap:3px; }
+.se-meta-label { font-size:9px; font-weight:700; color:rgba(255,255,255,.40); text-transform:uppercase; letter-spacing:.08em; }
+.se-meta-val { font-size:13px; font-weight:600; color:#fff; }
+.se-meta-input { font-size:13px; font-weight:600; color:#fff; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.16); border-radius:5px; padding:4px 9px; outline:none; min-width:110px; transition:background .15s,border-color .15s; }
+.se-meta-input:focus { background:rgba(255,255,255,.18); border-color:var(--gold); }
+.se-meta-item-custom { position:relative; padding-right:4px; }
+.se-meta-label-inp { font-size:9px; font-weight:700; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.07em; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); border-radius:4px; padding:2px 6px; outline:none; width:100px; transition:background .15s,border-color .15s; }
+.se-meta-label-inp:focus { background:rgba(255,255,255,.16); border-color:var(--gold); }
+.se-meta-remove-btn { position:absolute; top:-6px; right:-8px; width:16px; height:16px; border-radius:50%; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.25); color:rgba(255,255,255,.75); font-size:11px; line-height:1; display:none; align-items:center; justify-content:center; cursor:pointer; padding:0; }
+.se-meta-item-custom:hover .se-meta-remove-btn { display:flex; }
+.se-meta-remove-btn:hover { background:var(--red); border-color:var(--red); color:#fff; }
+.se-meta-add-btn { display:flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.20); color:#fff; font-size:15px; line-height:1; cursor:pointer; align-self:center; transition:background .15s; flex-shrink:0; }
+.se-meta-add-btn:hover { background:rgba(255,255,255,.22); }
+.se-progress-card { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r); overflow:hidden; margin-bottom:18px; box-shadow:0 2px 12px rgba(0,0,0,0.3); }
+.se-progress-card-inner { display:flex; align-items:stretch; }
+.se-prog-left { background:linear-gradient(135deg,#060810,var(--btg-dark)); padding:22px 28px; display:flex; flex-direction:column; gap:6px; min-width:200px; flex-shrink:0; border-radius:var(--r) 0 0 var(--r); border-right:1px solid rgba(0,82,204,0.3); }
+.se-prog-label { font-size:9px; font-weight:700; color:rgba(255,255,255,.40); text-transform:uppercase; letter-spacing:.09em; }
+.se-overall-pct { font-size:52px; font-weight:900; letter-spacing:-.04em; line-height:1; color:#fff; }
+.se-tasks-lbl { font-size:11px; color:rgba(255,255,255,.35); margin-top:2px; }
+.se-prog-right { flex:1; padding:22px 28px; display:flex; flex-direction:column; justify-content:center; gap:10px; background:var(--surface2); }
+.se-overall-sub { font-size:13px; color:var(--text2); font-weight:500; }
+.se-pbar-track { width:100%; height:10px; background:var(--surface3); border-radius:99px; overflow:hidden; }
+.se-pbar-fill { height:100%; background:linear-gradient(90deg,var(--btg-lt),var(--gold)); border-radius:99px; transition:width .6s ease; }
+/* SE sections */
+.se-row2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+.se-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+.se-card { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r); padding:20px 22px; }
+.se-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.se-card-title { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; display:flex; align-items:center; gap:7px; }
+.se-card-title::before { content:''; width:3px; height:13px; background:linear-gradient(180deg,var(--btg-lt),var(--gold)); border-radius:2px; flex-shrink:0; }
+/* status pills */
+.se-status-pill { appearance:none; -webkit-appearance:none; border:none; outline:none; cursor:pointer; font-size:12px; font-weight:700; padding:7px 18px; border-radius:20px; letter-spacing:.02em; transition:opacity .15s; }
+.se-status-pill:hover { opacity:.85; }
+.se-status-lbl { font-size:9px; font-weight:700; color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:.07em; }
+.se-pill-planejado { background:var(--s-done-bg); color:var(--s-done-tx); }
+.se-pill-atencao   { background:var(--amber-lt);  color:var(--amber); }
+.se-pill-critico   { background:var(--s-blok-bg); color:var(--s-blok-tx); }
+.se-pill-pendente  { background:var(--s-pend-bg); color:var(--s-pend-tx); }
+/* mini gantt */
+.se-gantt-wrap { overflow-x:auto; border-radius:var(--r-sm); border:1px solid var(--border2); }
+.se-gantt-grid { display:grid; min-width:520px; }
+.se-gantt-head { display:grid; background:linear-gradient(90deg,#060810,var(--btg-dark)); border-bottom:2px solid var(--border2); }
+.se-gantt-row { display:grid; border-bottom:1px solid var(--border); }
+.se-gantt-row:last-child { border-bottom:none; }
+.se-gantt-row.se-epic-gantt { background:var(--surface2); }
+.sg-name { padding:7px 12px; font-size:11px; font-weight:600; color:var(--text); border-right:1px solid var(--border); display:flex; align-items:center; gap:7px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sg-name.head { color:rgba(255,255,255,.70); font-weight:700; font-size:9px; text-transform:uppercase; letter-spacing:.07em; background:#060810; position:sticky; left:0; z-index:3; }
+.sg-cell { padding:4px 3px; border-right:1px solid var(--border); display:flex; align-items:center; }
+.sg-cell:last-child { border-right:none; }
+.sg-cell.head { padding:7px 2px; justify-content:center; font-size:8px; color:rgba(255,255,255,.60); font-weight:600; border-right:1px solid rgba(255,255,255,.06); }
+.sg-bar-wrap { position:relative; width:100%; height:12px; border-radius:4px; overflow:hidden; }
+.sg-bar-bg { position:absolute; inset:0; border-radius:4px; }
+.sg-bar-fill { position:absolute; top:0; left:0; height:100%; border-radius:4px; }
+.se-gantt-legend { display:flex; gap:14px; padding:8px 12px; background:var(--surface2); border-top:1px solid var(--border); flex-wrap:wrap; align-items:center; border-radius:0 0 var(--r-sm) var(--r-sm); }
+.se-legend-item { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--text2); font-weight:500; }
+.se-legend-sw { width:20px; height:7px; border-radius:3px; position:relative; overflow:hidden; }
+/* budget */
+.se-budget-field { display:flex; flex-direction:column; gap:5px; }
+.se-budget-lbl { font-size:9px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; }
+.se-budget-inp { font-size:14px; font-weight:700; color:var(--text); background:var(--surface2); border:1px solid var(--border2); border-radius:var(--r-sm); padding:9px 12px; outline:none; transition:border-color .15s,background .15s; width:100%; }
+.se-budget-inp:focus { border-color:var(--btg-lt); background:var(--surface3); }
+.se-budget-readonly { font-size:14px; font-weight:700; color:var(--green); background:var(--green-lt); border:1px solid rgba(0,200,122,0.25); border-radius:var(--r-sm); padding:9px 12px; }
+.se-budget-total-block { background:linear-gradient(135deg,#060810,var(--btg-dark)); border-radius:var(--r-sm); padding:14px 16px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:12px; border:1px solid rgba(0,82,204,0.3); }
+.se-budget-total-label-top { font-size:9px; font-weight:700; color:rgba(255,255,255,.40); text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px; }
+.se-budget-total-value { font-size:24px; font-weight:900; color:#fff; letter-spacing:-.03em; line-height:1; }
+.se-total-edit-btn { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22); color:#fff; border-radius:6px; padding:5px 10px; font-size:10px; font-weight:700; cursor:pointer; transition:background .15s; white-space:nowrap; }
+.se-total-edit-btn:hover { background:rgba(255,255,255,.22); }
+.se-budget-total-hidden { font-size:18px; font-weight:700; color:#fff; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.35); border-radius:6px; padding:6px 10px; outline:none; width:160px; }
+.se-budget-chart-row { display:flex; align-items:center; gap:18px; margin-bottom:4px; }
+.se-budget-donut-wrap { position:relative; width:100px; height:100px; flex-shrink:0; }
+.se-budget-donut-wrap canvas { position:absolute; top:0; left:0; }
+.se-budget-donut-center { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:900; color:var(--btg-lt); letter-spacing:-.02em; pointer-events:none; }
+.se-budget-chart-legend { display:flex; flex-direction:column; gap:7px; }
+.se-budget-legend-item { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--text2); font-weight:500; }
+.se-budget-legend-dot { width:9px; height:9px; border-radius:2px; flex-shrink:0; }
+.se-budget-save-row { display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
+/* epic list in SE */
+.se-epic-list { display:flex; flex-direction:column; gap:9px; }
+.se-epic-row { display:flex; align-items:center; gap:12px; padding:10px 14px; background:var(--surface2); border:1px solid var(--border2); border-radius:9px; transition:background .1s; }
+.se-epic-row:hover { background:var(--surface3); }
+.se-epic-color { width:11px; height:11px; border-radius:3px; flex-shrink:0; }
+.se-epic-name { font-size:13px; font-weight:600; color:var(--text); flex:1; }
+.se-epic-bar { flex:1; max-width:110px; height:6px; background:var(--surface3); border-radius:99px; overflow:hidden; }
+.se-epic-bar-fill { height:100%; border-radius:99px; }
+.se-epic-pct { font-size:13px; font-weight:800; color:var(--btg-lt); min-width:38px; text-align:right; letter-spacing:-.02em; }
+.se-epic-status { min-width:110px; text-align:right; }
+/* PE strip in SE */
+.se-pe-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.se-pe-cell { background:var(--surface2); border:1px solid var(--border2); border-radius:9px; padding:12px 14px; }
+.se-pe-val { font-size:22px; font-weight:900; color:var(--btg-lt); line-height:1; letter-spacing:-.03em; }
+.se-pe-lbl { font-size:9px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.07em; margin-top:3px; }
+.se-pe-bar-track { width:100%; height:9px; background:var(--surface3); border-radius:99px; overflow:hidden; display:flex; gap:2px; margin-top:8px; }
+.se-pe-bar-seg { height:100%; border-radius:99px; transition:flex .4s; }
+/* textareas in SE */
+.se-textarea { width:100%; min-height:96px; height:96px; resize:none; overflow:hidden; font-family:var(--font); font-size:13px; color:var(--text2); background:var(--surface2); border:1px solid var(--border2); border-radius:var(--r-sm); padding:10px 12px; outline:none; line-height:1.65; transition:border-color .15s,background .15s; }
+.se-textarea:focus { border-color:var(--btg-lt); background:var(--surface3); color:var(--text); }
+.se-text-save-row { display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:10px; }
+/* alerts */
+.se-alerts-wrap { display:flex; flex-direction:column; gap:8px; }
+.se-alert { display:flex; align-items:flex-start; gap:11px; padding:11px 14px; border-radius:9px; }
+.se-alert.warn { background:var(--amber-lt); border-left:3px solid var(--amber); }
+.se-alert.risk { background:var(--s-blok-bg); border-left:3px solid var(--red); }
+.se-alert.ok   { background:var(--s-done-bg); border-left:3px solid var(--green); }
+.se-alert-icon { font-size:15px; flex-shrink:0; line-height:1.4; }
+.se-alert-text { font-size:12px; color:var(--text2); line-height:1.6; }
+.se-alert-text strong { font-weight:700; color:var(--text); }
+
+/* ══ DASH HEADER ══ */
+.dash-header-strip { background:linear-gradient(135deg,#060810 0%,var(--btg-dark) 60%,var(--btg) 100%); border-radius:var(--r); margin-bottom:18px; border:1px solid rgba(0,82,204,0.35); box-shadow:0 4px 28px rgba(0,82,204,0.22); color:#fff; overflow:hidden; }
+.dash-toolbar { display:flex; justify-content:flex-end; margin-bottom:12px; }
+.btn-download-pdf { display:flex; align-items:center; gap:7px; background:var(--gold); color:#151204; border:none; border-radius:var(--r-sm); padding:8px 16px; font-size:12px; font-weight:700; cursor:pointer; transition:filter .15s,opacity .15s; letter-spacing:.01em; }
+.btn-download-pdf:hover { filter:brightness(1.1); }
+.btn-download-pdf:disabled { opacity:.6; cursor:default; }
+.pdf-exporting .dash-toolbar { visibility:hidden; }
+.pdf-exporting .se-meta-remove-btn,
+.pdf-exporting .squad-remove,
+.pdf-exporting .btn-add-squad,
+.pdf-exporting .se-meta-add-btn { display:none !important; }
+.pdf-exporting .gantt-outer { max-height:none !important; overflow:visible !important; }
+.dash-header-main { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:18px 24px 14px; }
+.dash-header-title-block { display:flex; flex-direction:column; gap:3px; }
+.dash-header-eyebrow { font-size:9px; font-weight:700; color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:.09em; }
+.dash-header-title-inp { font-size:20px; font-weight:900; letter-spacing:-.02em; color:#fff; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); border-radius:6px; padding:2px 8px; outline:none; width:340px; transition:background .15s,border-color .15s; }
+.dash-header-title-inp:focus { background:rgba(255,255,255,.15); border-color:var(--gold); }
+.dash-header-status { display:flex; align-items:center; gap:8px; flex-shrink:0; padding-top:4px; }
+.dash-header-status-lbl { font-size:9px; font-weight:700; color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:.08em; }
+.dash-header-meta { display:flex; gap:28px; flex-wrap:wrap; padding:0 24px 16px; border-top:1px solid rgba(255,255,255,.08); padding-top:12px; align-items:flex-end; justify-content:space-between; }
+.dash-header-fields { display:flex; gap:28px; flex-wrap:wrap; }
+.dash-meta-item { display:flex; flex-direction:column; gap:4px; }
+.dash-meta-label { font-size:9px; font-weight:700; color:rgba(255,255,255,.40); text-transform:uppercase; letter-spacing:.08em; }
+.dash-meta-inp { font-size:13px; font-weight:600; color:#fff; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); border-radius:5px; padding:4px 9px; outline:none; min-width:110px; transition:background .15s,border-color .15s; }
+.dash-meta-inp:focus { background:rgba(255,255,255,.18); border-color:var(--gold); }
+.dash-header-save-row { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.btn-save-header { background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.22); border-radius:var(--r-sm); padding:7px 18px; font-size:11px; font-weight:700; cursor:pointer; transition:background .15s; letter-spacing:.02em; white-space:nowrap; }
+.btn-save-header:hover { background:rgba(255,255,255,.22); }
+/* squad wrapper / toggle */
+.squad-wrapper { margin-bottom:20px; }
+.squad-toggle-bar { display:flex; align-items:center; justify-content:space-between; padding:0 0 8px; }
+.squad-toggle-label { font-size:9px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.09em; display:flex; align-items:center; gap:6px; }
+.btn-squad-toggle { display:flex; align-items:center; gap:5px; font-size:10px; font-weight:600; color:var(--text3); background:var(--surface2); border:1px solid var(--border2); border-radius:6px; padding:4px 10px; cursor:pointer; transition:background .15s,color .15s; }
+.btn-squad-toggle:hover { background:var(--btg-xlt); color:var(--btg-lt); }
+.btn-squad-toggle svg { width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2; transition:transform .2s; }
+.squad-collapsible { overflow:hidden; transition:max-height .3s ease,opacity .25s ease; max-height:600px; opacity:1; }
+.squad-collapsible.collapsed { max-height:0; opacity:0; }
+/* dash status bar */
+.dash-status-bar { display:none; } /* replaced by header strip */
+
+/* ══ EPICS BOARD ══ */
+.epic-wrap { margin-bottom:14px; }
+.epic-card { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r); overflow:hidden; transition:box-shadow .15s; }
+.epic-card:hover { box-shadow:0 6px 28px rgba(0,82,204,0.18); }
+.epic-top { display:grid; grid-template-columns:auto 1fr auto auto auto auto auto; align-items:center; gap:12px; padding:14px 20px; cursor:pointer; user-select:none; transition:background .1s; }
+.epic-top:hover { background:var(--surface2); }
+.epic-dot { width:13px; height:13px; border-radius:4px; flex-shrink:0; }
+.epic-title-inp { font-weight:700; font-size:14px; color:var(--text); background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:2px 6px; outline:none; min-width:80px; max-width:260px; transition:border-color .15s,background .15s; letter-spacing:-.01em; }
+.epic-title-inp:focus { border-color:var(--btg-lt); background:var(--surface2); }
+.meta-block { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+.meta-lbl { font-size:9px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.07em; }
+.pbar-row { display:flex; align-items:center; gap:8px; }
+.pbar { width:70px; height:6px; background:var(--surface3); border-radius:99px; overflow:hidden; }
+.pbar-fill { height:100%; border-radius:99px; }
+.pct { font-size:12px; font-weight:700; color:var(--text2); min-width:30px; text-align:right; }
+.chevron { width:17px; height:17px; flex-shrink:0; color:var(--text3); transition:transform .2s; }
+.epic-card.open .chevron { transform:rotate(180deg); }
+.epic-body { display:none; border-top:1px solid var(--border); }
+.epic-card.open .epic-body { display:block; }
+.next-step-row { display:flex; align-items:flex-start; gap:10px; padding:11px 20px; background:rgba(255,184,0,0.07); font-size:12px; color:var(--text2); border-bottom:1px solid var(--border); }
+.next-step-label { font-weight:700; color:var(--gold); white-space:nowrap; flex-shrink:0; }
+.ns-icon { width:15px; height:15px; stroke:var(--gold); fill:none; flex-shrink:0; margin-top:1px; stroke-width:1.8; }
+.ns-textarea { flex:1; font-size:12px; color:var(--text2); background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:2px 6px; outline:none; resize:none; min-height:32px; line-height:1.5; font-family:var(--font); transition:border-color .15s,background .15s; }
+.ns-textarea:focus { border-color:var(--btg-lt); background:var(--surface2); color:var(--text); }
+.subepic-header { display:flex; align-items:center; gap:8px; padding:8px 20px 7px; border-bottom:1px solid var(--border); background:var(--btg-xlt); }
+.subepic-label { font-size:10px; font-weight:700; color:var(--btg-lt); text-transform:uppercase; letter-spacing:.06em; }
+.subepic-pct { font-size:10px; font-weight:600; color:var(--text3); margin-left:auto; }
+.tasks-header { display:grid; grid-template-columns:1fr 70px 96px 96px 130px 110px 24px; padding:7px 20px; gap:8px; border-bottom:1px solid var(--border); background:var(--surface2); }
+.tasks-header span { font-size:9px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.07em; }
+.task-row { display:grid; grid-template-columns:1fr 70px 96px 96px 130px 110px 24px; align-items:center; padding:7px 20px; gap:8px; border-bottom:1px solid var(--border); transition:background .1s; }
+.task-row:last-child { border-bottom:none; }
+.task-row:hover { background:var(--surface2); }
+.task-inp { font-size:13px; color:var(--text); background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:3px 7px; width:100%; outline:none; transition:border-color .15s,background .15s; }
+.task-inp:focus { border-color:var(--btg-lt); background:var(--surface2); }
+.weight-inp { font-size:12px; color:var(--text3); text-align:right; background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:3px 7px; width:100%; outline:none; transition:border-color .15s,background .15s; }
+.weight-inp:focus { border-color:var(--btg-lt); background:var(--surface2); }
+.date-inp { font-size:11px; color:var(--text2); background:var(--surface2); border:1px solid var(--border2); border-radius:var(--r-xs); padding:4px 5px; outline:none; width:100%; transition:border-color .15s,background .15s; cursor:pointer; color-scheme:dark; }
+.date-inp:focus { border-color:var(--btg-lt); background:var(--surface3); }
+.epic-date-range { font-size:10px; color:var(--text3); white-space:nowrap; display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+.epic-date-range span { font-size:9px; font-weight:600; }
+.prog-wrap { display:flex; align-items:center; gap:6px; justify-content:flex-end; }
+.tpbar { width:46px; height:5px; background:var(--surface3); border-radius:99px; overflow:hidden; flex-shrink:0; }
+.tpbar-fill { height:100%; border-radius:99px; }
+.prog-inp { width:48px; font-size:12px; font-weight:700; color:var(--btg-lt); background:var(--btg-xlt); border:1px solid rgba(26,109,255,0.25); border-radius:var(--r-xs); padding:3px 5px; text-align:right; outline:none; cursor:text; transition:border-color .15s,background .15s; }
+.prog-inp:focus { border-color:var(--btg-lt); background:rgba(26,109,255,0.28); }
+.del-btn { background:none; border:none; cursor:pointer; color:var(--text3); font-size:16px; padding:0 2px; line-height:1; transition:color .1s; }
+.del-btn:hover { color:var(--red); }
+.btn-add-task { display:flex; align-items:center; gap:7px; margin:9px 20px; padding:6px 14px; font-size:12px; font-weight:600; color:var(--btg-lt); background:var(--btg-xlt); border:1.5px dashed rgba(26,109,255,0.30); border-radius:var(--r-sm); cursor:pointer; width:fit-content; transition:background .15s,border-color .15s; }
+.btn-add-task:hover { background:rgba(26,109,255,0.28); border-color:var(--btg-lt); }
+.btn-add-task svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2.5; }
+.epic-footer { display:flex; align-items:center; justify-content:flex-end; gap:10px; padding:9px 20px; border-top:1px solid var(--border); background:var(--surface2); }
+.btn-save-epic { background:linear-gradient(135deg,var(--btg),var(--btg-lt)); color:#fff; border:none; border-radius:var(--r-sm); padding:6px 18px; font-size:11px; font-weight:700; cursor:pointer; box-shadow:0 2px 10px rgba(0,82,204,0.30); transition:opacity .15s,transform .1s; letter-spacing:.02em; }
+.btn-save-epic:hover { opacity:.90; transform:translateY(-1px); }
+.btn-del-epic { display:flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:var(--red); background:var(--s-blok-bg); border:1px solid rgba(255,77,106,0.25); border-radius:var(--r-sm); padding:5px 12px; cursor:pointer; transition:background .15s; white-space:nowrap; margin-left:auto; }
+.btn-del-epic:hover { background:rgba(255,77,106,0.22); }
+.btn-del-epic svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2.2; }
+.btn-add-epic-wrap { margin-bottom:16px; }
+.btn-add-epic { display:flex; align-items:center; gap:8px; padding:12px 18px; font-size:13px; font-weight:600; color:var(--btg-lt); background:var(--surface); border:2px dashed rgba(26,109,255,0.25); border-radius:var(--r); cursor:pointer; width:100%; justify-content:center; transition:background .15s,border-color .15s; }
+.btn-add-epic:hover { background:var(--btg-xlt); border-color:var(--btg-lt); }
+.btn-add-epic svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.5; }
+
+/* ══ PE TABLE ══ */
+.pe-kpis { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+.pe-kpi { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r); padding:14px 18px; flex:1; min-width:128px; display:flex; align-items:center; gap:12px; transition:transform .15s,box-shadow .15s; }
+.pe-kpi:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,82,204,0.18); }
+.pe-kpi-swatch { width:4px; height:38px; border-radius:3px; flex-shrink:0; }
+.pe-kpi-val { font-size:24px; font-weight:900; color:var(--btg-lt); line-height:1; letter-spacing:-.03em; }
+.pe-kpi-label { font-size:9px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; margin-top:3px; }
+.pe-kpi-pct { font-size:11px; color:var(--text2); margin-top:2px; font-weight:600; }
+.pe-table-wrap { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r); overflow:hidden; box-shadow:0 2px 16px rgba(0,0,0,0.3); }
+.pe-table { width:100%; border-collapse:collapse; }
+.pe-table thead tr { background:linear-gradient(90deg,#060810,var(--btg-dark)); }
+.pe-table th { font-size:9px; color:rgba(255,255,255,.70); text-transform:uppercase; letter-spacing:.08em; padding:10px 12px; text-align:left; font-weight:700; }
+.pe-epic-row { cursor:pointer; transition:background .1s; border-bottom:1px solid var(--border); }
+.pe-epic-row:hover { background:var(--surface2); }
+.pe-epic-row td { padding:11px 12px; vertical-align:middle; }
+.pe-epic-name { font-size:13px; font-weight:600; color:var(--text); }
+.pe-tipo-badge { display:inline-flex; font-size:10px; font-weight:700; padding:3px 8px; border-radius:5px; letter-spacing:.05em; }
+.pe-tipo-imp { background:var(--s-prog-bg); color:var(--s-prog-tx); }
+.pe-tipo-dig { background:var(--purple-lt); color:var(--purple); }
+.pe-expand-btn { width:22px; height:22px; border-radius:5px; background:var(--surface2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; margin:0 auto; }
+.pe-expand-btn svg { width:11px; height:11px; stroke:var(--text3); transition:transform .2s; }
+.pe-epic-row.open .pe-expand-btn svg { transform:rotate(180deg); }
+.pe-task-row { display:none; border-bottom:1px solid var(--border); background:var(--bg); }
+.pe-task-row.vis { display:table-row; }
+.pe-task-row:hover { background:var(--surface2); }
+.pe-task-row td { padding:7px 12px; vertical-align:middle; }
+.pe-task-name-cell { padding-left:32px !important; }
+.pe-task-inp { font-size:12px; color:var(--text2); background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:2px 6px; width:100%; outline:none; transition:border-color .15s,background .15s; }
+.pe-task-inp:focus { border-color:var(--btg-lt); background:var(--surface2); color:var(--text); }
+.pe-add-row { display:none; } .pe-add-row.vis { display:table-row; }
+.pe-add-cell { padding:7px 12px 7px 44px !important; background:var(--surface2); }
+.btn-add-pe { display:flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:var(--btg-lt); background:none; border:none; cursor:pointer; padding:2px 0; }
+.btn-add-pe svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2.5; }
+.pe-save-row { display:none; } .pe-save-row.vis { display:table-row; }
+.pe-save-cell { padding:8px 12px !important; background:var(--surface2); border-bottom:1px solid var(--border); }
+.pe-save-inner { display:flex; justify-content:flex-end; align-items:center; gap:8px; }
+.pe-comment-inp { font-size:11px; color:var(--text2); background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:3px 6px; outline:none; width:100%; min-width:80px; transition:border-color .15s,background .15s; }
+.pe-comment-inp:focus { border-color:var(--btg-lt); background:var(--surface2); }
+.pe-comment-inp::placeholder { color:var(--text3); font-style:italic; }
+.pe-col-title-inp { font-size:13px; font-weight:600; color:var(--text); background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:2px 6px; outline:none; width:100%; transition:border-color .15s,background .15s; }
+.pe-col-title-inp:focus { border-color:var(--btg-lt); background:var(--surface2); }
+.pe-col-selo-inp { font-size:12px; color:var(--text2); background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:2px 6px; outline:none; width:80px; transition:border-color .15s,background .15s; }
+.pe-col-selo-inp:focus { border-color:var(--btg-lt); background:var(--surface2); }
+.btn-del-col { background:none; border:none; cursor:pointer; color:var(--red); font-size:15px; padding:0 4px; line-height:1; font-weight:700; transition:opacity .15s; }
+.btn-del-col:hover { opacity:.7; }
+.btn-add-col-wrap { padding:10px 12px; background:var(--surface2); border-top:1px solid var(--border); }
+.btn-add-col { display:flex; align-items:center; gap:7px; padding:7px 16px; font-size:12px; font-weight:600; color:var(--btg-lt); background:var(--surface); border:1.5px dashed rgba(26,109,255,0.25); border-radius:var(--r-sm); cursor:pointer; transition:background .15s,border-color .15s; }
+.btn-add-col:hover { background:var(--btg-xlt); border-color:var(--btg-lt); }
+.btn-add-col svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2.5; }
+
+/* ══ GANTT ══ */
+.gantt-container { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r); overflow:hidden; box-shadow:0 2px 20px rgba(0,0,0,0.35); }
+.gantt-outer { overflow-y:auto; max-height:72vh; position:relative; }
+.gantt-scroll { overflow-x:auto; }
+.gantt-grid { display:grid; min-width:800px; }
+.gantt-head-row { display:grid; border-bottom:2px solid var(--border2); background:linear-gradient(90deg,#060810,var(--btg-dark)); position:sticky; top:0; z-index:10; }
+.gantt-row { display:grid; border-bottom:1px solid var(--border); }
+.gantt-row:last-child { border-bottom:none; }
+.gantt-row.erow { background:var(--surface2); cursor:pointer; }
+.gantt-row.erow:hover { background:var(--surface3); }
+.gantt-row.sgrow { background:var(--btg-xlt); }
+.gantt-row.trow.hidden,.gantt-row.sgrow.hidden { display:none; }
+.g-head-name { padding:9px 14px; font-size:9px; color:rgba(255,255,255,.70); text-transform:uppercase; letter-spacing:.08em; font-weight:700; border-right:1px solid rgba(255,255,255,.08); position:sticky; left:0; background:#060810; z-index:5; }
+.g-head-week { padding:9px 4px; font-size:9px; color:rgba(255,255,255,.65); text-align:center; border-right:1px solid rgba(255,255,255,.06); font-weight:600; }
+.g-head-week:last-child { border-right:none; }
+.g-row-name { padding:7px 14px; font-size:12px; color:var(--text); border-right:1px solid var(--border); display:flex; align-items:center; gap:8px; position:sticky; left:0; background:inherit; z-index:4; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.g-row-name.sub { padding-left:26px; font-size:11px; color:var(--text2); }
+.g-row-name.subg { padding-left:14px; font-size:10px; font-weight:700; color:var(--btg-lt); text-transform:uppercase; letter-spacing:.05em; }
+.g-row-name.epic { font-weight:700; font-size:13px; }
+.g-tog { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:4px; background:var(--surface3); border:1px solid var(--border2); flex-shrink:0; margin-right:2px; }
+.g-tog svg { width:9px; height:9px; stroke:var(--btg-lt); transition:transform .2s; }
+.g-tog.exp svg { transform:rotate(90deg); }
+.g-cell { padding:4px 3px; border-right:1px solid var(--border); display:flex; align-items:center; }
+.g-cell:last-child { border-right:none; }
+.g-bar-wrap { position:relative; width:100%; height:13px; border-radius:5px; overflow:hidden; }
+.g-bar-bg { position:absolute; inset:0; border-radius:5px; }
+.g-bar-prog { position:absolute; top:0; left:0; height:100%; border-radius:5px; }
+.gantt-legend { display:flex; gap:20px; padding:11px 18px; border-top:1px solid var(--border); background:var(--surface2); flex-wrap:wrap; align-items:center; }
+.legend-item { display:flex; align-items:center; gap:7px; font-size:11px; font-weight:500; color:var(--text2); }
+.legend-swatch { width:26px; height:8px; border-radius:3px; position:relative; overflow:hidden; }
+
+/* ══ ROADMAP ══ */
+.rm-phase { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r); padding:22px 26px; margin-bottom:20px; }
+.rm-phase-header { display:flex; align-items:center; gap:14px; margin-bottom:20px; }
+.rm-phase-badge { display:inline-flex; align-items:center; padding:5px 14px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.03em; }
+.rm-phase-badge.f1 { background:var(--s-done-bg); color:var(--s-done-tx); }
+.rm-phase-badge.f2 { background:var(--s-prog-bg); color:var(--s-prog-tx); }
+.rm-phase-title { font-size:16px; font-weight:900; color:var(--text); letter-spacing:-.02em; }
+.rm-phase-sub { font-size:11px; color:var(--text3); margin-top:2px; }
+.rm-scope-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:24px; }
+.rm-scope-item { display:flex; align-items:flex-start; gap:12px; padding:13px 16px; background:var(--surface2); border-radius:10px; border:1px solid var(--border2); }
+.rm-scope-icon { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.rm-scope-icon svg { width:16px; height:16px; stroke:#fff; fill:none; stroke-width:1.6; }
+.rm-scope-label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text3); margin-bottom:3px; }
+.rm-scope-text { font-size:12px; color:var(--text2); line-height:1.55; }
+.rm-timeline { position:relative; padding-left:30px; }
+.rm-timeline::before { content:''; position:absolute; left:9px; top:8px; bottom:8px; width:2px; background:linear-gradient(180deg,var(--btg-lt),var(--gold)); border-radius:2px; opacity:.4; }
+.rm-item { position:relative; margin-bottom:22px; }
+.rm-item:last-child { margin-bottom:0; }
+.rm-dot { position:absolute; left:-30px; top:3px; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.rm-dot.done    { background:var(--green); box-shadow:0 0 0 3px var(--green-lt); }
+.rm-dot.current { background:var(--btg-lt); box-shadow:0 0 0 3px var(--btg-xlt); animation:rmPulse 2s infinite; }
+.rm-dot.upcoming{ background:var(--surface3); border:2px solid var(--border2); }
+@keyframes rmPulse { 0%,100%{box-shadow:0 0 0 3px var(--btg-xlt);} 50%{box-shadow:0 0 0 7px var(--btg-xlt);} }
+.rm-dot svg { width:9px; height:9px; }
+.rm-month { font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:5px; }
+.rm-item.current-item .rm-month { color:var(--btg-lt); }
+.rm-deliverables { display:flex; flex-direction:column; gap:4px; }
+.rm-deliv { display:flex; align-items:center; gap:7px; font-size:13px; color:var(--text2); }
+.rm-deliv::before { content:''; width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+.rm-deliv.done-d::before { background:var(--green); }
+.rm-deliv.cur-d::before  { background:var(--btg-lt); }
+.rm-deliv.up-d::before   { background:var(--text3); }
+.rm-tag-here { display:inline-flex; align-items:center; background:linear-gradient(90deg,var(--btg-lt),var(--gold)); color:#0A0A0A; font-size:9px; font-weight:900; padding:3px 10px; border-radius:20px; letter-spacing:.05em; margin-left:8px; vertical-align:middle; }
+
+/* ══ SAVE BLOCK BTN ══ */
+.btn-save-block { background:linear-gradient(135deg,var(--btg),var(--btg-lt)); color:#fff; border:none; border-radius:var(--r-sm); padding:6px 18px; font-size:11px; font-weight:700; cursor:pointer; box-shadow:0 2px 10px rgba(0,82,204,0.25); transition:opacity .15s,transform .1s; letter-spacing:.02em; }
+.btn-save-block:hover { opacity:.90; transform:translateY(-1px); }
+
+/* ══ FOOTER ══ */
+footer { text-align:center; padding:22px 36px; font-size:11px; color:var(--text3); border-top:1px solid var(--border); margin-top:52px; background:var(--surface); }
+
+/* ══ RESPONSIVE ══ */
+@media (max-width:680px) {
+  main { padding:16px; } header { padding:0 16px; } .tabs-bar { padding:0 12px; }
+  .dash-kpis,.se-grid { grid-template-columns:1fr 1fr; } .dash-row { grid-template-columns:1fr; }
+  .squad-members { grid-template-columns:1fr 1fr; }
+  .epic-top { grid-template-columns:auto 1fr auto; }
+  .meta-block:nth-child(4),.meta-block:nth-child(5) { display:none; }
+  .tasks-header,.task-row { grid-template-columns:1fr 130px 24px; }
+  .weight-inp,.date-inp { display:none; }
+  .rm-scope-grid { grid-template-columns:1fr; }
+}
+
+/* ── Compat: mantidas do layout anterior para elementos ainda usados na aba Status Executivo ── */
+.se-header-top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:18px 24px 14px; }
+.se-status-pill-wrap { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+
+/* ══ LOCK SCREEN (login com senha compartilhada — Firebase Auth) ══ */
+#fb-lock { position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg,#060810 0%,var(--btg-dark) 60%,var(--btg) 100%); display:flex; align-items:center; justify-content:center; padding:24px; }
+#fb-lock.hidden { display:none; }
+.fb-lock-card { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14); border-radius:16px; padding:36px 32px; max-width:360px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.35); }
+.fb-lock-title { color:#fff; font-size:18px; font-weight:900; letter-spacing:-.02em; margin-bottom:6px; }
+.fb-lock-sub { color:rgba(255,255,255,0.55); font-size:12px; margin-bottom:22px; }
+.fb-lock-input { width:100%; padding:11px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.08); color:#fff; font-size:14px; outline:none; margin-bottom:12px; box-sizing:border-box; }
+.fb-lock-input::placeholder { color:rgba(255,255,255,0.4); }
+.fb-lock-input:focus { border-color:var(--gold); background:rgba(255,255,255,0.13); }
+.fb-lock-btn { width:100%; padding:11px 14px; border-radius:8px; border:none; background:var(--gold); color:#1a1200; font-weight:800; font-size:13px; cursor:pointer; transition:opacity .15s; }
+.fb-lock-btn:hover { opacity:0.88; }
+.fb-lock-btn:disabled { opacity:0.5; cursor:default; }
+.fb-lock-err { color:#FF8A93; font-size:12px; margin-top:10px; min-height:16px; }
+.fb-lock-note { color:rgba(255,255,255,0.4); font-size:10px; margin-top:18px; line-height:1.5; }
+.fb-local-banner { background:#FEF3C7; color:#7A5B00; font-size:12px; font-weight:600; text-align:center; padding:8px 16px; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOCK SCREEN — login com senha compartilhada (Firebase Auth) ══
+     Fica oculto (.hidden) se o Firebase não estiver configurado ainda
+     (modo local, ver FIREBASE_READY no bloco de script principal) ou depois
+     que o login é feito com sucesso. -->
+<div id="fb-lock" class="hidden">
+  <div class="fb-lock-card">
+    <div class="fb-lock-title">Dashboard de Programa BTG</div>
+    <div class="fb-lock-sub">Digite a senha da equipe para acessar</div>
+    <input type="password" id="fb-lock-pass" class="fb-lock-input" placeholder="Senha" autocomplete="current-password"/>
+    <button type="button" id="fb-lock-btn" class="fb-lock-btn">Entrar</button>
+    <div id="fb-lock-err" class="fb-lock-err"></div>
+    <div class="fb-lock-note">Os dados deste dashboard são compartilhados entre todos que entrarem com a senha da equipe.</div>
+  </div>
+</div>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <a class="logo" href="#">
+    <div class="logo-mark">
+      <img src="data:image/png;base64,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" alt="BTG Pactual"/>
+    </div>
+    <div class="logo-text">
+      <span class="logo-name">BTG</span>
+      <span class="logo-sep">—</span>
+      <span class="logo-sub">Dashboard de Programa</span>
+    </div>
+  </a>
+  <span class="header-meta" id="updated-date"></span>
+</header>
+
+<!-- ══ TABS ══ -->
+<nav class="tabs-bar">
+  <button class="tab-btn active" onclick="switchTab('status')">
+    <svg viewBox="0 0 16 16" stroke-width="1.6"><path d="M1 12 L5 8 L9 10 L13 4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13" cy="4" r="1.8" fill="currentColor" stroke="none"/></svg>
+    Status Executivo
+  </button>
+  <button class="tab-btn" onclick="switchTab('dashboard')">
+    <svg viewBox="0 0 16 16" stroke-width="1.6"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+    Dashboard de Programa
+  </button>
+  <button class="tab-btn" onclick="switchTab('board')">
+    <svg viewBox="0 0 16 16" stroke-width="1.6"><rect x="1" y="1" width="5" height="7" rx="1"/><rect x="1" y="10" width="5" height="5" rx="1"/><rect x="8" y="1" width="7" height="5" rx="1"/><rect x="8" y="8" width="7" height="7" rx="1"/></svg>
+    Épicos
+  </button>
+  <button class="tab-btn" onclick="switchTab('gantt')">
+    <svg viewBox="0 0 16 16" stroke-width="1.6"><line x1="1" y1="5" x2="11" y2="5"/><line x1="1" y1="9" x2="15" y2="9"/><line x1="1" y1="13" x2="8" y2="13"/></svg>
+    Gantt
+  </button>
+  <button class="tab-btn" onclick="switchTab('roadmap')">
+    <svg viewBox="0 0 16 16" stroke-width="1.6"><polyline points="1,13 5,5 9,9 13,3" stroke-linecap="round" stroke-linejoin="round"/><line x1="13" y1="3" x2="15" y2="3"/></svg>
+    Roadmap
+  </button>
+</nav>
+
+<main>
+  <!-- STATUS EXECUTIVO -->
+  <div id="view-status" class="view active">
+
+    <!-- ── Barra de ações: exportar PDF ── -->
+    <div class="dash-toolbar">
+      <button class="btn-download-pdf" id="btn-download-pdf-status" onclick="downloadTabPDF('view-status','se-title','status-executivo-btg','btn-download-pdf-status','btn-download-pdf-status-label')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="width:13px;height:13px;"><path d="M8 1v9"/><path d="M4.5 6.5 8 10l3.5-3.5"/><path d="M2 12.5v1a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5v-1"/></svg>
+        <span id="btn-download-pdf-status-label">Baixar PDF</span>
+      </button>
+    </div>
+
+    <!-- ── Header strip: título + meta (compartilhado com Dashboard de Programa) ── -->
+    <div class="se-header-strip">
+      <div class="dash-header-main">
+        <div class="dash-header-title-block">
+          <span class="dash-header-eyebrow">Relatório de Programa · BTG</span>
+          <input class="dash-header-title-inp" id="se-title" value="Status Executivo — DCM Fase II" placeholder="Título do relatório"/>
+        </div>
+        <div class="dash-header-status">
+          <span class="dash-header-status-lbl">Status Geral</span>
+          <select class="se-status-pill se-pill-planejado" id="se-status-geral" onchange="onStatusGeral(this,'btg_dcm_status_geral')">
+            <option value="planejado">✅ Planejado</option>
+            <option value="atencao">⚠️ Em atenção</option>
+            <option value="critico">🔴 Crítico</option>
+            <option value="pendente">⏸ Pendente</option>
+          </select>
+        </div>
+      </div>
+      <div class="dash-header-meta">
+        <div class="dash-header-fields">
+          <div class="dash-meta-item">
+            <label class="dash-meta-label">Data</label>
+            <span class="dash-meta-label" id="se-date" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px;">—</span>
+          </div>
+          <div class="dash-meta-item">
+            <label class="dash-meta-label" for="se-pm">PM</label>
+            <input class="dash-meta-inp" id="se-pm" value="Thaís Balsi" placeholder="PM"/>
+          </div>
+          <div class="dash-meta-item">
+            <label class="dash-meta-label" for="se-bpm">BPM</label>
+            <input class="dash-meta-inp" id="se-bpm" value="" placeholder="BPM"/>
+          </div>
+          <div class="dash-meta-item">
+            <label class="dash-meta-label" for="se-dm">CRM Director</label>
+            <input class="dash-meta-inp" id="se-dm" value="" placeholder="CRM Director"/>
+          </div>
+          <div id="se-meta-extra" style="display:contents;"></div>
+          <button class="se-meta-add-btn" title="Adicionar novo campo" onclick="addSeMetaField()">+</button>
+        </div>
+        <div class="dash-header-save-row">
+          <span class="saved-note" id="se-header-saved">✓ Salvo</span>
+          <button class="btn-save-header" onclick="saveDashHeader('se')">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Time Dedicado (logo abaixo do header) ── -->
+    <div class="squad-card" id="squad-status" style="margin-bottom:16px;"></div>
+
+    <!-- ── Progresso Geral — card separado ── -->
+    <div class="se-progress-card" style="margin-bottom:18px;">
+      <div class="se-progress-card-inner">
+        <div class="se-prog-left">
+          <div class="se-prog-label">Progresso Geral do Programa</div>
+          <div class="se-overall-pct" id="se-pct">—%</div>
+          <div class="se-tasks-lbl" id="se-tasks-lbl">— de — tarefas concluídas</div>
+        </div>
+        <div class="se-prog-right">
+          <div class="se-overall-sub" id="se-sub">média ponderada · 0 épicos ativos</div>
+          <div class="se-pbar-track"><div class="se-pbar-fill" id="se-pbar" style="width:0%;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Row 1: Mini Gantt + Orçamento ── -->
+    <div class="se-row2" style="margin-bottom:16px;">
+
+      <!-- Mini Gantt -->
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Timeline — Mini Gantt</span></div>
+        <div class="se-gantt-wrap">
+          <div class="se-gantt-grid" id="se-gantt-grid"></div>
+          <div class="se-gantt-legend">
+            <span style="font-size:10px;color:var(--text3);font-weight:600;margin-right:4px;">Legenda:</span>
+            <div class="se-legend-item"><div class="se-legend-sw" style="background:#D2F0E5;border:1px solid #0F7250;"><div style="position:absolute;inset:0;background:#0F7250;width:55%;"></div></div>Concluído</div>
+            <div class="se-legend-item"><div class="se-legend-sw" style="background:#D8E1FA;border:1px solid #1B3FA0;"><div style="position:absolute;inset:0;background:#1B3FA0;width:55%;"></div></div>Em progresso</div>
+            <div class="se-legend-item"><div class="se-legend-sw" style="background:#FFE8EA;border:1px solid #FF5F6D;"><div style="position:absolute;inset:0;background:#FF5F6D;width:55%;"></div></div>Bloqueado</div>
+            <div class="se-legend-item"><div class="se-legend-sw" style="background:#EEF1FB;border:1px solid #9BA3CC;"><div style="position:absolute;inset:0;background:#9BA3CC;width:55%;"></div></div>Pendente</div>
+            <span style="font-size:10px;color:var(--text3);margin-left:6px;">· Barra = % progresso ponderado</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orçamento VILT — total fixo no topo, consumido, disponível, gráfico com % no centro -->
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Orçamento VILT</span></div>
+
+        <!-- 1) Orçamento Total — fixo, destaque no topo -->
+        <div class="se-budget-total-block">
+          <div class="se-budget-total-label-top">Orçamento Total</div>
+          <div class="se-budget-total-value" id="se-total-display">R$ 0,00</div>
+          <input class="se-budget-total-hidden" id="se-total-inp" placeholder="0" inputmode="numeric" style="display:none;"/>
+          <button class="se-total-edit-btn" id="se-total-edit-btn" onclick="toggleTotalEdit()">✏️ Editar</button>
+        </div>
+
+        <!-- 2) Consumido -->
+        <div class="se-budget-field" style="margin-bottom:10px;">
+          <label class="se-budget-lbl" for="se-consumed">Consumido</label>
+          <input class="se-budget-inp" id="se-consumed" placeholder="R$ 0,00" inputmode="numeric"/>
+        </div>
+
+        <!-- 3) Disponível -->
+        <div class="se-budget-field" style="margin-bottom:14px;">
+          <div class="se-budget-lbl">Disponível</div>
+          <div class="se-budget-readonly" id="se-available">R$ 0,00</div>
+        </div>
+
+        <!-- 4) Gráfico com % consumido no centro + legenda -->
+        <div class="se-budget-chart-row">
+          <div class="se-budget-donut-wrap">
+            <canvas id="budgetChart" width="100" height="100"></canvas>
+            <div class="se-budget-donut-center" id="se-budget-pct-center">0%</div>
+          </div>
+          <div class="se-budget-chart-legend">
+            <div class="se-budget-legend-item"><div class="se-budget-legend-dot" style="background:#1B3FA0;"></div><span id="se-leg-consumed">Consumido: R$ 0,00</span></div>
+            <div class="se-budget-legend-item"><div class="se-budget-legend-dot" style="background:#0F7250;"></div><span id="se-leg-available">Disponível: R$ 0,00</span></div>
+          </div>
+        </div>
+
+        <div class="se-budget-save-row">
+          <span class="saved-note" id="budget-saved-note">✓ Salvo</span>
+          <button class="btn-save-block" onclick="saveBudget()">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Row 2: Épicos ── -->
+    <div style="margin-bottom:16px;">
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Detalhamento por Épico</span></div>
+        <div class="se-epic-list" id="se-epic-list"></div>
+      </div>
+    </div>
+
+    <!-- ── Row 3: Próximos Passos + Status Comercial ── -->
+    <div class="se-row2" style="margin-bottom:16px;">
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Próximos Passos</span></div>
+        <textarea class="se-textarea" id="se-next-steps" placeholder="Descreva os próximos passos...">1. Agendamento de discoveries: ISA, Timesheet, Licenciamentos e Editoriais
+2. Adequação de cronogramas de produção (editorial x implementação)
+3. Primeiras agendas de GMO com time Fase 2: Equipes, comunicados, entrevistas
+4. Acompanhamento de Discovery e validação de requisitos</textarea>
+        <div class="se-text-save-row">
+          <span class="saved-note" id="next-saved-note">✓ Salvo</span>
+          <button class="btn-save-block" onclick="saveTextBlock('se-next-steps','btg_dcm_next_steps_se','next-saved-note')">Salvar</button>
+        </div>
+      </div>
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Status Comercial</span></div>
+        <textarea class="se-textarea" id="se-commercial" placeholder="Atualizações comerciais, contratos, fornecedores...">VILT: contrato vigente, operação assistida em curso.
+Adobe: licenças Workfront e AEM Assets ativas.
+UCM: GMO em execução para Fase II.
+Pendente: alinhamento de escopo financeiro Fase II.</textarea>
+        <div class="se-text-save-row">
+          <span class="saved-note" id="comm-saved-note">✓ Salvo</span>
+          <button class="btn-save-block" onclick="saveTextBlock('se-commercial','btg_dcm_commercial','comm-saved-note')">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Row 4: Riscos & Alertas + Decisões ── -->
+    <div class="se-row2" style="margin-bottom:0;">
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Riscos &amp; Alertas</span></div>
+        <textarea class="se-textarea" id="se-risks" placeholder="Riscos, bloqueios e pontos de atenção...">⚠️ Treinamentos: materiais pendentes (0%).
+⚠️ ISA: arquitetura de integração não iniciada.
+🔴 Migração Vulcano: script em fase inicial (10%).
+✅ Licenciamentos: core em Sandbox configurado.</textarea>
+        <div class="se-text-save-row">
+          <span class="saved-note" id="risk-saved-note">✓ Salvo</span>
+          <button class="btn-save-block" onclick="saveTextBlock('se-risks','btg_dcm_risks_se','risk-saved-note')">Salvar</button>
+        </div>
+      </div>
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Decisões</span></div>
+        <textarea class="se-textarea" id="se-decisions" placeholder="Decisões tomadas..."></textarea>
+        <div class="se-text-save-row">
+          <span class="saved-note" id="se-decisions-note">✓ Salvo</span>
+          <button class="btn-save-block" onclick="saveTextBlock('se-decisions','btg_dcm_decisions_se','se-decisions-note')">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /view-status -->
+
+  <!-- DASHBOARD -->
+  <div id="view-dashboard" class="view">
+
+    <!-- ── Barra de ações: exportar PDF ── -->
+    <div class="dash-toolbar">
+      <button class="btn-download-pdf" id="btn-download-pdf" onclick="downloadDashboardPDF()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="width:13px;height:13px;"><path d="M8 1v9"/><path d="M4.5 6.5 8 10l3.5-3.5"/><path d="M2 12.5v1a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5v-1"/></svg>
+        <span id="btn-download-pdf-label">Baixar PDF</span>
+      </button>
+    </div>
+
+    <!-- ── Cabeçalho editável (espelha SE header) ── -->
+    <div class="dash-header-strip">
+      <div class="dash-header-main">
+        <div class="dash-header-title-block">
+          <span class="dash-header-eyebrow">Relatório de Programa · BTG</span>
+          <input class="dash-header-title-inp" id="dash-title" value="Status Executivo — DCM Fase II" placeholder="Título do relatório"/>
+        </div>
+        <div class="dash-header-status">
+          <span class="dash-header-status-lbl">Status Geral</span>
+          <select class="se-status-pill se-pill-planejado" id="dash-status-geral" onchange="onStatusGeral(this,'btg_dcm_status_geral')">
+            <option value="planejado">✅ Planejado</option>
+            <option value="atencao">⚠️ Em atenção</option>
+            <option value="critico">🔴 Crítico</option>
+            <option value="pendente">⏸ Pendente</option>
+          </select>
+        </div>
+      </div>
+      <div class="dash-header-meta">
+        <div class="dash-header-fields">
+          <div class="dash-meta-item">
+            <label class="dash-meta-label">Data</label>
+            <span class="dash-meta-label" id="dash-header-date" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px;">—</span>
+          </div>
+          <div class="dash-meta-item">
+            <label class="dash-meta-label" for="dash-pm">PM</label>
+            <input class="dash-meta-inp" id="dash-pm" value="Thaís Balsi" placeholder="PM"/>
+          </div>
+          <div class="dash-meta-item">
+            <label class="dash-meta-label" for="dash-bpm">BPM</label>
+            <input class="dash-meta-inp" id="dash-bpm" value="" placeholder="BPM"/>
+          </div>
+          <div class="dash-meta-item">
+            <label class="dash-meta-label" for="dash-dm">CRM Director</label>
+            <input class="dash-meta-inp" id="dash-dm" value="" placeholder="CRM Director"/>
+          </div>
+          <div id="dash-meta-extra" style="display:contents;"></div>
+          <button class="se-meta-add-btn" title="Adicionar novo campo" onclick="addSeMetaField()">+</button>
+        </div>
+        <div class="dash-header-save-row">
+          <span class="saved-note" id="dash-header-saved">✓ Salvo</span>
+          <button class="btn-save-header" onclick="saveDashHeader('dash')">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Squad Dedicado (minimizável) ── -->
+    <div class="squad-wrapper">
+      <div class="squad-toggle-bar">
+        <span class="squad-toggle-label">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:12px;height:12px;"><circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-2.76 2.24-5 5-5"/><circle cx="12" cy="7" r="2"/><path d="M9 13c0-1.66 1.34-3 3-3s3 1.34 3 3"/></svg>
+          Squad Dedicado
+        </span>
+        <button class="btn-squad-toggle" id="btn-squad-toggle" onclick="toggleSquad()">
+          <svg id="squad-toggle-icon" viewBox="0 0 16 16"><polyline points="4,6 8,10 12,6"/></svg>
+          <span id="squad-toggle-txt">Minimizar</span>
+        </button>
+      </div>
+      <div class="squad-collapsible" id="squad-collapsible">
+        <div class="squad-card" id="squad-dash"></div>
+      </div>
+    </div>
+
+    <div class="dash-kpis">
+      <div class="kpi-card"><div class="kpi-label">Progresso geral</div><div class="kpi-value" id="k-avg">—</div><div class="kpi-sub">média ponderada dos épicos</div></div>
+      <div class="kpi-card"><div class="kpi-label">Tarefas concluídas</div><div class="kpi-value" id="k-done">—</div><div class="kpi-sub" id="k-done-sub">de — tarefas</div></div>
+      <div class="kpi-card"><div class="kpi-label">Em progresso</div><div class="kpi-value" id="k-wip">—</div><div class="kpi-sub">tarefas ativas</div></div>
+      <div class="kpi-card"><div class="kpi-label">Épico mais avançado</div><div class="kpi-value" id="k-top-val" style="font-size:20px;margin-top:4px;">—</div><div class="kpi-sub" id="k-top-sub">—</div></div>
+    </div>
+    <div class="dash-row">
+      <div class="dash-card"><div class="dash-card-title">Progresso ponderado por épico</div><div style="position:relative;width:100%;height:256px;"><canvas id="barChart"></canvas></div></div>
+      <div class="dash-card"><div class="dash-card-title">Distribuição de tarefas</div><div style="position:relative;width:100%;height:176px;"><canvas id="donutChart"></canvas></div><div class="donut-legend" id="donut-legend"></div></div>
+    </div>
+    <div class="dash-card" style="margin-bottom:16px;"><div class="dash-card-title">Detalhamento por épico</div><div class="epic-progress-list" id="epic-progress-list"></div></div>
+    <!-- ── Timeline + Próximos Passos + Dependências + Riscos (espelham Status Executivo) ── -->
+    <!-- Timeline (mesma timeline completa da aba Gantt) -->
+    <div style="margin-bottom:16px;">
+      <div class="dash-card-title" style="margin-bottom:10px;">Timeline</div>
+      <div class="gantt-container">
+        <div class="gantt-outer"><div class="gantt-scroll"><div class="gantt-grid" id="dash-full-gantt-grid"></div></div></div>
+        <div class="gantt-legend" id="dash-full-gantt-legend"></div>
+      </div>
+    </div>
+    <!-- Atualizações + Próximos Passos -->
+    <div class="se-row2" style="margin-bottom:16px;">
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Atualizações</span></div>
+        <textarea class="se-textarea" id="dash-updates" placeholder="Últimas atualizações..."></textarea>
+        <div class="se-text-save-row">
+          <span class="saved-note" id="dash-updates-note">✓ Salvo</span>
+          <button class="btn-save-block" onclick="saveTextBlock('dash-updates','btg_dcm_updates','dash-updates-note')">Salvar</button>
+        </div>
+      </div>
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Próximos Passos</span></div>
+        <textarea class="se-textarea" id="dash-next-steps" placeholder="Próximos passos..."></textarea>
+        <div class="se-text-save-row">
+          <span class="saved-note" id="dash-next-note">✓ Salvo</span>
+          <button class="btn-save-block" onclick="saveTextBlock('dash-next-steps','btg_dcm_next_steps_dash','dash-next-note')">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dependências + Riscos & Alertas -->
+    <div class="se-row2" style="margin-bottom:16px;">
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Dependências</span></div>
+        <textarea class="se-textarea" id="dash-dependencies" placeholder="Descreva as dependências..."></textarea>
+        <div class="se-text-save-row">
+          <span class="saved-note" id="dash-dep-note">✓ Salvo</span>
+          <button class="btn-save-block" onclick="saveTextBlock('dash-dependencies','btg_dcm_dependencies','dash-dep-note')">Salvar</button>
+        </div>
+      </div>
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Riscos &amp; Alertas</span></div>
+        <textarea class="se-textarea" id="dash-risks" placeholder="Riscos e alertas..." style="min-height:80px;"></textarea>
+        <div class="se-text-save-row">
+          <span class="saved-note" id="dash-risk-note">✓ Salvo</span>
+          <button class="btn-save-block" onclick="saveTextBlock('dash-risks','btg_dcm_risks_dash','dash-risk-note')">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decisões -->
+    <div style="margin-bottom:16px;">
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Decisões</span></div>
+        <textarea class="se-textarea" id="dash-decisions" placeholder="Decisões tomadas..."></textarea>
+        <div class="se-text-save-row">
+          <span class="saved-note" id="dash-decisions-note">✓ Salvo</span>
+          <button class="btn-save-block" onclick="saveTextBlock('dash-decisions','btg_dcm_decisions_dash','dash-decisions-note')">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-card" style="margin-bottom:16px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+
+        <!-- list side -->
+        <div style="flex:1;min-width:260px;">
+          <div class="dash-card-title">Incremento funcional</div>
+          <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px;">Funcionalidades disponíveis em Produção, contempladas ou não no escopo original.</p>
+
+          <!-- editable rows -->
+          <div id="incr-list" style="margin-bottom:10px;"></div>
+
+          <!-- add + save row -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px solid var(--border);">
+            <button class="btn-add-incr" onclick="addIncrItem()">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+              Adicionar funcionalidade
+            </button>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="saved-note" id="incr-saved-note">✓ Salvo</span>
+              <button class="btn-save-epic" onclick="saveIncrList()">Salvar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- counter badge -->
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:128px;padding:24px;background:linear-gradient(135deg,var(--btg-dark),var(--btg));border-radius:var(--r);gap:4px;flex-shrink:0;box-shadow:0 4px 18px rgba(13,34,114,0.20);">
+          <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.09em;">funcionalidades</div>
+          <div id="incr-count" style="font-size:54px;font-weight:800;color:#fff;line-height:1;letter-spacing:-.04em;">13</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:500;">entregues</div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /view-dashboard -->
+
+  <!-- ÉPICOS -->
+  <div id="view-board" class="view"><div id="board-container"></div></div>
+
+  <!-- GANTT -->
+  <div id="view-gantt" class="view">
+    <div class="gantt-container">
+      <div class="gantt-outer"><div class="gantt-scroll"><div class="gantt-grid" id="gantt-grid"></div></div></div>
+      <div class="gantt-legend" id="gantt-legend"></div>
+    </div>
+  </div>
+
+  <!-- ROADMAP
+       Sem fases/conteúdo pré-carregados: o conteúdo anterior (datas,
+       escopos e entregáveis das "Fase 1" e "Fase 2", incluindo itens de
+       produção como "SAEB em Foco e Descobertas" e "OPEECast") pertencia
+       ao programa do FTD e foi removido por completo para não haver
+       nenhum vínculo ou relação de conteúdo com o roadmap do FTD.
+       Este roadmap é HTML estático — não existe editor na interface para
+       esta aba (diferente de Board/Squad/Incremento Funcional, que têm
+       botões de adicionar/editar). Para recriar as fases reais do BTG,
+       edite os blocos ".rm-phase" diretamente neste arquivo, ou peça
+       para eu montar o roadmap a partir das informações do programa. -->
+  <div id="view-roadmap" class="view">
+    <div class="rm-empty-state" style="text-align:center;padding:64px 24px;color:var(--text3);">
+      <div style="font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px;">Nenhuma fase cadastrada</div>
+      <div style="font-size:12px;max-width:420px;margin:0 auto;">O roadmap deste programa (BTG) ainda não foi preenchido. Adicione as fases, datas e entregáveis reais editando esta seção do arquivo.</div>
+    </div>
+  </div>
+</main>
+<footer id="footer-txt"></footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- Firebase (compat build) — só é usado se firebaseConfig abaixo for preenchido.
+     Ver guia de configuração enviado junto com este arquivo. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ═══ FIREBASE — dados compartilhados entre todos os usuários ═══
+   Preencha firebaseConfig abaixo com os valores do SEU projeto Firebase
+   (veja o guia de configuração enviado junto com este arquivo). Enquanto
+   ficar com os placeholders "COLE_AQUI", o dashboard funciona sozinho, no
+   modo local antigo (cada pessoa só edita sua própria cópia, salva no
+   navegador dela — nada é compartilhado). */
+const firebaseConfig = {
+  apiKey: "COLE_AQUI",
+  authDomain: "COLE_AQUI",
+  projectId: "COLE_AQUI",
+  storageBucket: "COLE_AQUI",
+  messagingSenderId: "COLE_AQUI",
+  appId: "COLE_AQUI",
+};
+/* E-mail do usuário único compartilhado criado em Firebase Authentication
+   (passo 3 do guia). Não precisa ser um e-mail real — é só um identificador
+   interno; quem acessa o dashboard só digita a SENHA na tela de login. */
+const FIREBASE_LOGIN_EMAIL = "equipe@dashboard-btg.app";
+const FIREBASE_READY = !!(firebaseConfig.apiKey && firebaseConfig.apiKey !== "COLE_AQUI");
+
+let fbAuth=null, fbDocRef=null, _fbCache={}, _fbUnsub=null, _fbBooted=false;
+
+/* ═══ STORAGE ═══
+   Todas as chaves usam o prefixo "btg_" para garantir que este dashboard
+   (BTG) NUNCA compartilhe ou sobrescreva dados com o dashboard do projeto
+   FTD (ou qualquer outro) — nem no localStorage local, nem no Firestore
+   (cada dashboard clonado deste template deve apontar para o SEU PRÓPRIO
+   projeto Firebase; nunca reutilize o mesmo projeto/config em dois
+   dashboards de programas diferentes). */
+const ST={
+  get(k,d){
+    if (FIREBASE_READY) { const v=_fbCache[k]; return (v!==undefined&&v!==null)?v:d; }
+    try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}
+  },
+  set(k,v){
+    if (FIREBASE_READY) {
+      _fbCache[k]=v;
+      if (fbDocRef) fbDocRef.set({[k]:v},{merge:true}).catch(e=>console.error('Firestore save falhou:',e));
+      return;
+    }
+    try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}
+  }
+};
+function fmtDate(d) { if(!d) return '—'; try{const [y,m,dd]=d.split('-');return `${dd}/${m}/${y}`;}catch(e){return d;} }
+
+/* ── Firebase: autenticação (senha única compartilhada) + sincronização ── */
+function fbShowLock(err){
+  const el=document.getElementById('fb-lock'); if(el) el.classList.remove('hidden');
+  const errEl=document.getElementById('fb-lock-err'); if(errEl) errEl.textContent = err||'';
+}
+function fbHideLock(){
+  const el=document.getElementById('fb-lock'); if(el) el.classList.add('hidden');
+}
+async function fbDoLogin(){
+  const pass=document.getElementById('fb-lock-pass').value;
+  const btn=document.getElementById('fb-lock-btn');
+  if(!pass){ fbShowLock('Digite a senha.'); return; }
+  btn.disabled=true;
+  try{
+    await fbAuth.signInWithEmailAndPassword(FIREBASE_LOGIN_EMAIL, pass);
+  }catch(e){
+    fbShowLock('Senha incorreta. Tente novamente.');
+  }
+  btn.disabled=false;
+}
+function fbRebuildAll(){
+  /* refaz as variáveis "vivas" a partir do cache mais recente e redesenha
+     tudo — chamado quando OUTRA pessoa salva uma mudança */
+  EPICS = ST.get('btg_epics_data', null) || JSON.parse(JSON.stringify(EPICS_DEF));
+  incrItems = ST.get('btg_dcm_incr', null) || [...INCR_DEFAULT];
+  peState = ST.get('btg_pe_state', null) || PE_COLS.map(()=>PE_TASKS_DEF.map(n=>({name:n,status:'pendente'})));
+  PE_COLS_STATE = ST.get('btg_pe_cols_extra', []);
+  buildAllSquads(); buildAllMetaExtra(); restoreDashHeader();
+  buildStatusExec(); buildDashboard(); buildBoard(); buildGantt(); buildPE();
+}
+async function fbStartSync(){
+  if(_fbBooted) return; /* evita rodar boot() duas vezes se onAuthStateChanged disparar de novo */
+  _fbBooted=true;
+  try{
+    const snap = await fbDocRef.get();
+    _fbCache = snap.exists ? (snap.data()||{}) : {};
+  }catch(e){ console.error('Falha ao carregar dados do Firestore:', e); _fbCache={}; }
+  boot();
+  _fbUnsub = fbDocRef.onSnapshot(s=>{
+    if(!s.exists) return;
+    _fbCache = s.data()||{};
+    fbRebuildAll();
+  }, e=>console.error('Firestore onSnapshot falhou:', e));
+}
+function fbInit(){
+  firebase.initializeApp(firebaseConfig);
+  fbAuth = firebase.auth();
+  fbDocRef = firebase.firestore().collection('btg_dashboard').doc('state');
+  document.getElementById('fb-lock-btn').addEventListener('click', fbDoLogin);
+  document.getElementById('fb-lock-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') fbDoLogin(); });
+  fbAuth.onAuthStateChanged(user=>{
+    if(user){ fbHideLock(); fbStartSync(); }
+    else { fbShowLock(); }
+  });
+}
+
+
+/* ═══════════════════════════════════════════
+   SQUAD WIDGET — dynamic, numbered, add/remove
+   ═══════════════════════════════════════════ */
+const SQUAD_DEF=[
+  {role:'PM',name:'Thaís'},{role:'BA',name:''},
+  {role:'Especialista WF',name:''},{role:'Especialista WF',name:''},
+  {role:'Especialista Fusion e BE',name:''},{role:'QA e Suporte',name:''},
+];
+function getSquad(){return ST.get('btg_squad',JSON.parse(JSON.stringify(SQUAD_DEF)));}
+
+function buildSquadCard(containerId, label){
+  label = label || 'Squad Dedicado';
+  const card=document.getElementById(containerId); if(!card) return;
+  const squad=getSquad();
+  card.innerHTML='';
+
+  /* ── header ── */
+  const hdr=document.createElement('div'); hdr.className='squad-header';
+  const trow=document.createElement('div'); trow.className='squad-title-row';
+  trow.innerHTML=`<svg viewBox="0 0 16 16" stroke-width="1.5" style="width:13px;height:13px;stroke:rgba(255,255,255,0.65);fill:none;flex-shrink:0;"><circle cx="6" cy="5" r="2.5"/><path d="M1 13c0-2.76 2.24-5 5-5"/><circle cx="12" cy="7" r="2"/><path d="M9 13c0-1.66 1.34-3 3-3s3 1.34 3 3"/></svg><span class="squad-title">${label}</span>`;
+  const addBtn=document.createElement('button'); addBtn.className='btn-add-squad'; addBtn.title='Adicionar membro'; addBtn.textContent='+';
+  addBtn.addEventListener('click',()=>{ const sq=getSquad(); sq.push({role:'Cargo',name:'Nome'}); ST.set('btg_squad',sq); buildAllSquads(); });
+  hdr.appendChild(trow); hdr.appendChild(addBtn);
+  card.appendChild(hdr);
+
+  /* ── 3-col grid ── */
+  const grid=document.createElement('div'); grid.className='squad-members';
+
+  squad.forEach((m,i)=>{
+    const blk=document.createElement('div'); blk.className='squad-member-block';
+
+    /* number */
+    const numEl=document.createElement('div'); numEl.className='squad-num';
+    numEl.textContent=String(i+1).padStart(2,'0');
+
+    /* cargo — single-line input, uppercase small */
+    const roleInp=document.createElement('input'); roleInp.className='squad-role-inp';
+    roleInp.type='text'; roleInp.value=m.role; roleInp.placeholder='Cargo / Função';
+    roleInp.addEventListener('input',e=>{ const sq=getSquad(); sq[i].role=e.target.value; ST.set('btg_squad',sq); });
+
+    /* nome — larger bold */
+    const nameInp=document.createElement('input'); nameInp.className='squad-name-inp';
+    nameInp.type='text'; nameInp.value=m.name; nameInp.placeholder='Nome';
+    nameInp.addEventListener('input',e=>{ const sq=getSquad(); sq[i].name=e.target.value; ST.set('btg_squad',sq); });
+
+    /* remove on hover */
+    const rmBtn=document.createElement('button'); rmBtn.className='squad-remove'; rmBtn.title='Remover'; rmBtn.textContent='×';
+    rmBtn.addEventListener('click',()=>{ const sq=getSquad(); sq.splice(i,1); ST.set('btg_squad',sq); buildAllSquads(); });
+
+    blk.appendChild(numEl);
+    blk.appendChild(roleInp);
+    blk.appendChild(nameInp);
+    blk.appendChild(rmBtn);
+    grid.appendChild(blk);
+  });
+  card.appendChild(grid);
+
+  /* ── save row ── */
+  const saveRow=document.createElement('div'); saveRow.className='squad-save-row';
+  const note=document.createElement('span'); note.className='saved-note'; note.id='sq-note-'+containerId; note.textContent='✓ Salvo com sucesso';
+  const saveBtn=document.createElement('button'); saveBtn.className='btn-save'; saveBtn.textContent='Salvar';
+  saveBtn.addEventListener('click',()=>{ note.classList.add('show'); setTimeout(()=>note.classList.remove('show'),2500); });
+  saveRow.appendChild(note); saveRow.appendChild(saveBtn);
+  card.appendChild(saveRow);
+}
+
+function buildAllSquads(){ buildSquadCard('squad-status','Time Dedicado'); buildSquadCard('squad-dash','Squad Dedicado'); }
+
+/* ═══════════════════════════════════════════
+   HEADER — campos de papel/nome extras (dinâmicos, compartilhados entre abas)
+   ═══════════════════════════════════════════ */
+function getSeMetaExtra(){ return ST.get('btg_se_meta_extra', []); }
+function buildMetaExtra(containerId){
+  const wrap=document.getElementById(containerId); if(!wrap) return;
+  const items=getSeMetaExtra();
+  wrap.innerHTML='';
+  items.forEach((it,i)=>{
+    const box=document.createElement('div'); box.className='se-meta-item se-meta-item-custom';
+
+    const labelInp=document.createElement('input'); labelInp.className='se-meta-label-inp';
+    labelInp.type='text'; labelInp.value=it.label; labelInp.placeholder='Função';
+    labelInp.addEventListener('input',e=>{ const arr=getSeMetaExtra(); arr[i].label=e.target.value; ST.set('btg_se_meta_extra',arr); });
+
+    const valInp=document.createElement('input'); valInp.className='dash-meta-inp';
+    valInp.type='text'; valInp.value=it.value; valInp.placeholder='Nome';
+    valInp.addEventListener('input',e=>{ const arr=getSeMetaExtra(); arr[i].value=e.target.value; ST.set('btg_se_meta_extra',arr); });
+
+    const rmBtn=document.createElement('button'); rmBtn.className='se-meta-remove-btn'; rmBtn.title='Remover campo'; rmBtn.textContent='×';
+    rmBtn.addEventListener('click',()=>{ const arr=getSeMetaExtra(); arr.splice(i,1); ST.set('btg_se_meta_extra',arr); buildAllMetaExtra(); });
+
+    box.appendChild(labelInp); box.appendChild(valInp); box.appendChild(rmBtn);
+    wrap.appendChild(box);
+  });
+}
+function buildAllMetaExtra(){ buildMetaExtra('se-meta-extra'); buildMetaExtra('dash-meta-extra'); }
+function addSeMetaField(){
+  const arr=getSeMetaExtra();
+  arr.push({label:'Novo Papel', value:'Nome'});
+  ST.set('btg_se_meta_extra', arr);
+  buildAllMetaExtra();
+}
+
+
+/* ═══ EPICS DATA ═══ */
+const TOTAL_WEEKS=12;
+const EC=['#1A35C8','#0F6E56','#FF5C6E','#D97706','#7C3AED'];
+const EL=['#D6DCFA','#D4F0E8','#FFE0E3','#FEF3C7','#EDE9FE'];
+/* Sem épicos pré-carregados: nenhum conteúdo herdado de outro programa/
+   dashboard. Use "Adicionar novo épico" na aba Board para começar a
+   cadastrar os épicos deste programa (BTG) do zero. */
+const EPICS_DEF=[];
+let EPICS=ST.get('btg_epics_data',null)||JSON.parse(JSON.stringify(EPICS_DEF));
+
+/* ═══ HELPERS ═══ */
+function allTasks(e){return e.groups.flatMap(g=>g.tasks);}
+function wProg(tasks){const arr=Array.isArray(tasks)?tasks:allTasks(tasks);const tot=arr.reduce((s,t)=>s+(+t.weight||0),0);const sum=arr.reduce((s,t)=>s+(+t.progress||0)*(+t.weight||0),0);return tot>0?Math.round(sum/tot):0;}
+function barClr(s){return s==='concluído'?'#0F6E56':s==='em progresso'?'#1A35C8':s==='bloqueado'?'#FF5C6E':'#9BA3CC';}
+function barLgt(s){return s==='concluído'?'#D4F0E8':s==='em progresso'?'#D6DCFA':s==='bloqueado'?'#FFE0E3':'#EEF1FB';}
+function sClass(s){return s==='concluído'?'s-concluido':s==='em progresso'?'s-progresso':s==='bloqueado'?'s-bloqueado':'s-pendente';}
+function sLabel(s){return s==='concluído'?'Concluído':s==='em progresso'?'Em progresso':s==='bloqueado'?'Bloqueado':'Pendente';}
+function badgeClass(s){return s==='concluído'?'badge-green':s==='em progresso'?'badge-blue':s==='bloqueado'?'badge-red':'badge-gray';}
+function mkSel(cur,onChange){
+  const sel=document.createElement('select'); sel.className='status-sel '+sClass(cur);
+  ['pendente','em progresso','concluído','bloqueado'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=sLabel(v);if(cur===v)o.selected=true;sel.appendChild(o);});
+  sel.addEventListener('change',()=>{sel.className='status-sel '+sClass(sel.value);if(onChange)onChange(sel.value);});
+  sel.addEventListener('click',e=>e.stopPropagation());
+  return sel;
+}
+
+/* STATUS EXECUTIVO JS */
+let budgetChart = null;
+let dashBarChart = null, dashDonutChart = null;
+
+function fmtBRL(val) {
+  const n = parseFloat(String(val).replace(/[^\d,\.]/g,'').replace(',','.')) || 0;
+  return n.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+function parseBRL(str) {
+  return parseFloat(String(str).replace(/[^\d,]/g,'').replace(',','.')) || 0;
+}
+function maskBRL(inp, onUpdate) {
+  inp.addEventListener('input', e => {
+    let raw = e.target.value.replace(/\D/g,'');
+    if (!raw) { e.target.value = ''; if(onUpdate) onUpdate(); return; }
+    const cents = parseInt(raw,10);
+    e.target.value = (cents/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    if(onUpdate) onUpdate();
+  });
+}
+/* Toggle editing the fixed total */
+function toggleTotalEdit() {
+  const disp = document.getElementById('se-total-display');
+  const inp  = document.getElementById('se-total-inp');
+  const btn  = document.getElementById('se-total-edit-btn');
+  if (!disp || !inp || !btn) return;
+  if (inp.style.display === 'none') {
+    // enter edit mode
+    inp.style.display = 'block';
+    inp.value = disp.textContent === 'R$ 0,00' ? '' : disp.textContent;
+    disp.style.display = 'none';
+    btn.textContent = '✓ Confirmar';
+    inp.focus(); inp.select();
+    if (!inp._masked) {
+      inp._masked = true;
+      maskBRL(inp, () => {
+        const v = parseBRL(inp.value);
+        const dispEl = document.getElementById('se-total-display');
+        if (dispEl) dispEl.textContent = fmtBRL(v);
+        updateBudget();
+      });
+    }
+  } else {
+    // confirm
+    const v = parseBRL(inp.value);
+    disp.textContent = fmtBRL(v);
+    inp.style.display = 'none';
+    disp.style.display = '';
+    btn.textContent = '✏️ Editar';
+    updateBudget();
+  }
+}
+function updateBudget() {
+  const consumed  = parseBRL(document.getElementById('se-consumed')?.value || '0');
+  // read total from the display value (fixed) or hidden input
+  const totalDisp = document.getElementById('se-total-display');
+  const totalInp  = document.getElementById('se-total-inp');
+  let total = 0;
+  if (totalInp && totalInp.style.display !== 'none') {
+    total = parseBRL(totalInp.value);
+  } else if (totalDisp) {
+    total = parseBRL(totalDisp.textContent);
+  }
+  const available = total - consumed;
+  const avEl = document.getElementById('se-available');
+  if (avEl) {
+    avEl.textContent = fmtBRL(available < 0 ? 0 : available);
+    avEl.style.color = available < 0 ? 'var(--red)' : '';
+  }
+  const lc = document.getElementById('se-leg-consumed');
+  const la = document.getElementById('se-leg-available');
+  if (lc) lc.textContent = 'Consumido: ' + fmtBRL(consumed);
+  if (la) la.textContent = 'Disponível: ' + fmtBRL(available < 0 ? 0 : available);
+  const pct = total > 0 ? Math.round((consumed / total) * 100) : 0;
+  const centerEl = document.getElementById('se-budget-pct-center');
+  if (centerEl) centerEl.textContent = pct + '%';
+  renderBudgetChart(consumed, available < 0 ? 0 : available, pct);
+}
+function renderBudgetChart(consumed, available, pct) {
+  const canvas = document.getElementById('budgetChart');
+  if (!canvas) return;
+  if (budgetChart) { budgetChart.destroy(); budgetChart = null; }
+  const total = consumed + available;
+  budgetChart = new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: ['Consumido', 'Disponível'],
+      datasets: [{
+        data: total > 0 ? [consumed, available] : [0, 1],
+        backgroundColor: total > 0 ? ['#1B3FA0','#0F7250'] : ['#E0E4F5','#E0E4F5'],
+        borderColor: '#fff', borderWidth: 3, hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: false, cutout: '70%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ' + fmtBRL(ctx.raw) } }
+      }
+    }
+  });
+}
+function saveBudget() {
+  const totalDisp = document.getElementById('se-total-display');
+  ST.set('btg_dcm_budget', {
+    consumed: document.getElementById('se-consumed')?.value || '',
+    total_display: totalDisp ? totalDisp.textContent : 'R$ 0,00'
+  });
+  const n = document.getElementById('budget-saved-note');
+  if (n) { n.classList.add('show'); setTimeout(()=>n.classList.remove('show'),2500); }
+}
+function saveTextBlock(fieldId, storageKey, noteId) {
+  const el = document.getElementById(fieldId);
+  if (el) ST.set(storageKey, el.value);
+  const n = document.getElementById(noteId);
+  if (n) { n.classList.add('show'); setTimeout(()=>n.classList.remove('show'),2500); }
+}
+
+/* ═══ TEXTAREAS DINÂMICAS — crescem para caber todo o conteúdo ═══ */
+function autoGrowTextarea(el){
+  if(!el) return;
+  el.style.height='auto';
+  el.style.height=(el.scrollHeight+2)+'px';
+}
+function autoGrowAllTextareas(scope){
+  const root = scope ? document.querySelector(scope) : document;
+  if(!root) return;
+  root.querySelectorAll('.se-textarea').forEach(autoGrowTextarea);
+}
+function wireAutoGrowTextareas(){
+  document.querySelectorAll('.se-textarea').forEach(el=>{
+    if(el._autoGrowWired) return;
+    el._autoGrowWired=true;
+    el.addEventListener('input',()=>autoGrowTextarea(el));
+  });
+}
+function onStatusGeral(sel, storageKey) {
+  sel.className = 'se-status-pill se-pill-' + sel.value;
+  ST.set(storageKey || 'btg_dcm_status_geral', sel.value);
+  /* sync all status selects that share the same key */
+  ['se-status-geral','dash-status-geral'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el !== sel) {
+      el.value = sel.value;
+      el.className = 'se-status-pill se-pill-' + sel.value;
+    }
+  });
+}
+function buildMiniGantt() {
+  const grid = document.getElementById('se-gantt-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const {months, monthIndexOf} = ganttMonthRange();
+  const TOTAL_MONTHS = months.length;
+  const nameW = 160;
+  const mW    = Math.max(40, Math.floor((900-nameW)/TOTAL_MONTHS));
+  const cols  = `${nameW}px ${Array(TOTAL_MONTHS).fill(mW+'px').join(' ')}`;
+  /* head */
+  const hd = document.createElement('div');
+  hd.className = 'se-gantt-head';
+  hd.style.gridTemplateColumns = cols;
+  hd.innerHTML = `<div class="sg-name head">Épico</div>` +
+    months.map(mo=>`<div class="sg-cell head">${mo.label}</div>`).join('');
+  grid.appendChild(hd);
+  /* epic rows only (no sub-tasks, keeps it mini) */
+  EPICS.forEach((epic, ei) => {
+    const tasks = allTasks(epic);
+    if (!tasks.length) return;
+    const color  = EC[ei % EC.length];
+    const light  = EL[ei % EL.length];
+    const prog   = wProg(tasks);
+    const ranges = tasks.map(taskDateRange);
+    const eStart = Math.min(...ranges.map(r=>monthIndexOf(r.start)));
+    const eEnd   = Math.max(...ranges.map(r=>monthIndexOf(r.end)))+1;
+    const row = document.createElement('div');
+    row.className = 'se-gantt-row se-epic-gantt';
+    row.style.gridTemplateColumns = cols;
+    let cells = `<div class="sg-name">
+      <span style="width:9px;height:9px;border-radius:2px;background:${color};flex-shrink:0;display:inline-block;"></span>
+      <span style="overflow:hidden;text-overflow:ellipsis;">${epic.name}</span>
+      <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:auto;flex-shrink:0;">${prog}%</span>
+    </div>`;
+    for (let m=1; m<=TOTAL_MONTHS; m++) {
+      cells += m >= eStart && m < eEnd
+        ? `<div class="sg-cell"><div class="sg-bar-wrap"><div class="sg-bar-bg" style="background:${light};"></div><div class="sg-bar-fill" style="width:${prog}%;background:${color};"></div></div></div>`
+        : `<div class="sg-cell"></div>`;
+    }
+    row.innerHTML = cells;
+    grid.appendChild(row);
+  });
+}
+function buildStatusExec() {
+  const progs = EPICS.map(e => wProg(allTasks(e)));
+  const avg   = progs.length ? Math.round(progs.reduce((a,b)=>a+b,0) / progs.length) : 0;
+  let done=0, total=0;
+  EPICS.forEach(e => allTasks(e).forEach(t => { total++; if (t.status==='concluído') done++; }));
+  /* header */
+  const pctEl = document.getElementById('se-pct'); if (pctEl) pctEl.textContent = avg+'%';
+  const subEl = document.getElementById('se-sub'); if (subEl) subEl.textContent = `média ponderada · ${EPICS.length} épicos ativos`;
+  const lblEl = document.getElementById('se-tasks-lbl'); if (lblEl) lblEl.textContent = `${done} de ${total} tarefas concluídas`;
+  const pbar  = document.getElementById('se-pbar'); if (pbar) pbar.style.width = avg+'%';
+  /* date */
+  const dateEl = document.getElementById('se-date');
+  if (dateEl) {
+    const d=new Date();
+    const months=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    dateEl.textContent = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  }
+  /* restore saved meta */
+  const sg = ST.get('btg_dcm_status_geral','planejado');
+  ['se-status-geral','dash-status-geral'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = sg; el.className = 'se-status-pill se-pill-'+sg; }
+  });
+  /* meta fields are now static (fixed names in HTML) */
+  /* restore budget */
+  const bud = ST.get('btg_dcm_budget',null);
+  if (bud) {
+    const cEl = document.getElementById('se-consumed');
+    if (cEl && bud.consumed) cEl.value = bud.consumed;
+    const dispEl = document.getElementById('se-total-display');
+    if (dispEl && bud.total_display) dispEl.textContent = bud.total_display;
+  }
+  /* attach BRL mask to consumed once */
+  const ci = document.getElementById('se-consumed');
+  if (ci && !ci._masked) { ci._masked=true; maskBRL(ci, updateBudget); }
+  updateBudget();
+  /* restore text blocks (SE + dash mirrors) */
+  restoreSharedBlocks();
+  const comm = ST.get('btg_dcm_commercial', null);
+  if (comm !== null) { const e=document.getElementById('se-commercial'); if(e) e.value=comm; }
+  /* epic list */
+  const list = document.getElementById('se-epic-list');
+  if (list) {
+    list.innerHTML = '';
+    EPICS.forEach((e,i) => {
+      const p = progs[i];
+      const row = document.createElement('div'); row.className='se-epic-row';
+      row.innerHTML=`<div class="se-epic-color" style="background:${EC[i%EC.length]};"></div>
+        <div class="se-epic-name">${e.name}</div>
+        <div class="se-epic-bar"><div class="se-epic-bar-fill" style="width:${p}%;background:${EC[i%EC.length]};"></div></div>
+        <div class="se-epic-pct">${p}%</div>
+        <div class="se-epic-status"><span class="badge ${badgeClass(e.status)}">${e.status}</span></div>`;
+      list.appendChild(row);
+    });
+  }
+  /* mini gantt */
+  buildMiniGantt();
+  autoGrowAllTextareas('#view-status');
+}
+/* ═══ helpers: derive epic date range from tasks ═══ */
+function epicDateRange(epic) {
+  const all = allTasks(epic).filter(t=>t.dateStart||t.dateEnd);
+  if (!all.length) return {s:'',e:''};
+  const starts = all.map(t=>t.dateStart).filter(Boolean).sort();
+  const ends   = all.map(t=>t.dateEnd).filter(Boolean).sort();
+  return { s: starts[0]||'', e: ends[ends.length-1]||'' };
+}
+/* ═══ BOARD (Épicos) ═══ */
+function buildBoard(){
+  const cont=document.getElementById('board-container'); cont.innerHTML='';
+
+  EPICS.forEach((epic,ei)=>{
+    const color=EC[ei%EC.length];
+    const prog=wProg(allTasks(epic));
+    const dr=epicDateRange(epic);
+    const wrap=document.createElement('div'); wrap.className='epic-wrap';
+    const card=document.createElement('div'); card.className='epic-card open';
+
+    /* ── epic top bar ── */
+    const top=document.createElement('div'); top.className='epic-top';
+    /* build top contents imperatively so title input doesn't trigger toggle */
+    const dotSpan=document.createElement('span'); dotSpan.className='epic-dot'; dotSpan.style.background=color;
+    /* editable title */
+    const titleInp=document.createElement('input'); titleInp.className='epic-title-inp';
+    titleInp.value=epic.name; titleInp.placeholder='Nome do épico';
+    titleInp.addEventListener('input',e=>{epic.name=e.target.value;});
+    titleInp.addEventListener('click',e=>e.stopPropagation());
+    titleInp.addEventListener('change',e=>{epic.name=e.target.value;});
+    /* status meta */
+    const mStatus=document.createElement('div'); mStatus.className='meta-block';
+    mStatus.innerHTML=`<span class="meta-lbl">status</span><span class="badge ${badgeClass(epic.status)}">${epic.status}</span>`;
+    /* dates meta */
+    const mDates=document.createElement('div'); mDates.className='meta-block';
+    mDates.innerHTML=`<span class="meta-lbl">datas</span><div class="epic-date-range"><span>▶ ${fmtDate(dr.s)}</span><span>■ ${fmtDate(dr.e)}</span></div>`;
+    /* progress meta */
+    const mProg=document.createElement('div'); mProg.className='meta-block';
+    mProg.innerHTML=`<span class="meta-lbl">progresso</span><div class="pbar-row"><div class="pbar"><div class="pbar-fill" id="bprog-${ei}" style="width:${prog}%;background:${color};"></div></div><span class="pct" id="bpct-${ei}">${prog}%</span></div>`;
+    /* delete epic button */
+    const delEpicBtn=document.createElement('button'); delEpicBtn.className='btn-del-epic';
+    delEpicBtn.innerHTML=`<svg viewBox="0 0 16 16"><polyline points="3,4 13,4"/><path d="M5,4V2h6v2"/><path d="M4,4l1,10h6l1-10"/></svg>Excluir`;
+    delEpicBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(!confirm(`Excluir o épico "${epic.name}"? Esta ação não pode ser desfeita.`)) return;
+      EPICS.splice(ei,1);
+      ST.set('btg_epics_data',EPICS);
+      buildBoard(); buildGantt(); buildStatusExec(); buildDashboard();
+    });
+    /* chevron */
+    const chev=document.createElement('svg'); chev.setAttribute('class','chevron'); chev.setAttribute('viewBox','0 0 16 16'); chev.setAttribute('fill','none'); chev.setAttribute('stroke','currentColor'); chev.setAttribute('stroke-width','1.5'); chev.innerHTML='<polyline points="4,6 8,10 12,6"/>';
+    top.append(dotSpan,titleInp,mStatus,mDates,mProg,delEpicBtn,chev);
+    top.addEventListener('click',()=>card.classList.toggle('open'));
+
+    const body=document.createElement('div'); body.className='epic-body';
+
+    /* ── próximo passo editável ── */
+    const nsRow=document.createElement('div'); nsRow.className='next-step-row';
+    const nsIcon=`<svg class="ns-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.5"><polyline points="3,8 8,3 13,8"/><line x1="8" y1="3" x2="8" y2="13"/></svg>`;
+    const nsLabel=document.createElement('span'); nsLabel.className='next-step-label'; nsLabel.textContent='Próximo passo: ';
+    const nsTa=document.createElement('textarea'); nsTa.className='ns-textarea'; nsTa.rows=2;
+    nsTa.value=epic.nextStep||''; nsTa.placeholder='Descreva o próximo passo…';
+    nsTa.addEventListener('input',e=>{epic.nextStep=e.target.value;});
+    nsTa.addEventListener('click',e=>e.stopPropagation());
+    nsRow.innerHTML=nsIcon; nsRow.appendChild(nsLabel); nsRow.appendChild(nsTa);
+    body.appendChild(nsRow);
+
+    epic.groups.forEach((g,gi)=>{
+      if(g.label){
+        const gp=wProg(g.tasks);
+        const gh=document.createElement('div'); gh.className='subepic-header';
+        gh.innerHTML=`<svg style="width:12px;height:12px;stroke:var(--btg);fill:none;flex-shrink:0;" viewBox="0 0 16 16" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/></svg>
+          <span class="subepic-label">${g.label}</span><span class="subepic-pct" id="sgpct-${ei}-${gi}">${gp}% ponderado</span>`;
+        body.appendChild(gh);
+      }
+
+      /* tasks header */
+      const th=document.createElement('div'); th.className='tasks-header';
+      th.innerHTML='<span>Tarefa</span><span>Peso</span><span>Início</span><span>Fim</span><span>Status</span><span>Progresso</span><span></span>';
+      body.appendChild(th);
+
+      const tc=document.createElement('div'); tc.id=`tc-${ei}-${gi}`;
+
+      function mkTaskRow(t,ti){
+        const row=document.createElement('div'); row.className='task-row';
+
+        /* name */
+        const ni=document.createElement('input'); ni.className='task-inp'; ni.value=t.name;
+        ni.addEventListener('change',e=>{t.name=e.target.value;});
+        ni.addEventListener('click',e=>e.stopPropagation());
+
+        /* weight */
+        const wi=document.createElement('input'); wi.className='weight-inp'; wi.value=Math.round((+t.weight||0)*100)+'%';
+        wi.addEventListener('change',e=>{const v=parseFloat(e.target.value)/100;t.weight=isNaN(v)?0:v;refreshEpicBar(ei,gi);});
+        wi.addEventListener('click',e=>e.stopPropagation());
+        const ww=document.createElement('div'); ww.style.textAlign='right'; ww.appendChild(wi);
+
+        /* date start */
+        const ds=document.createElement('input'); ds.type='date'; ds.className='date-inp'; ds.value=t.dateStart||'';
+        ds.addEventListener('change',e=>{t.dateStart=e.target.value; refreshEpicDates(ei);});
+        ds.addEventListener('click',e=>e.stopPropagation());
+
+        /* date end */
+        const de=document.createElement('input'); de.type='date'; de.className='date-inp'; de.value=t.dateEnd||'';
+        de.addEventListener('change',e=>{t.dateEnd=e.target.value; refreshEpicDates(ei);});
+        de.addEventListener('click',e=>e.stopPropagation());
+
+        /* status */
+        const sw=document.createElement('div'); sw.style.cssText='display:flex;justify-content:flex-end;';
+        const sel=mkSel(t.status,val=>{t.status=val;pf.style.background=barClr(val);refreshEpicBar(ei,gi);buildGantt();});
+        sw.appendChild(sel);
+
+        /* progress */
+        const pw=document.createElement('div'); pw.className='prog-wrap';
+        const pb=document.createElement('div'); pb.className='tpbar';
+        const pf=document.createElement('div'); pf.className='tpbar-fill'; pf.style.cssText=`width:${t.progress}%;background:${barClr(t.status)};`;
+        pb.appendChild(pf);
+        const pi=document.createElement('input'); pi.className='prog-inp'; pi.value=t.progress+'%';
+        pi.addEventListener('change',e=>{const raw=e.target.value.replace('%','').trim();const v=parseInt(raw);t.progress=isNaN(v)?0:Math.min(100,Math.max(0,v));pi.value=t.progress+'%';pf.style.width=t.progress+'%';refreshEpicBar(ei,gi);buildGantt();});
+        pi.addEventListener('focus',e=>{pi.value=pi.value.replace('%','');pi.select();});
+        pi.addEventListener('blur',e=>{if(!pi.value.includes('%'))pi.value=pi.value.replace(/[^0-9]/g,'')+'%';});
+        pi.addEventListener('click',e=>e.stopPropagation());
+        pw.append(pb,pi);
+
+        /* delete */
+        const db=document.createElement('button'); db.className='del-btn'; db.textContent='×';
+        db.addEventListener('click',e=>{e.stopPropagation();g.tasks.splice(ti,1);tc.innerHTML='';g.tasks.forEach((tt,tti)=>tc.appendChild(mkTaskRow(tt,tti)));refreshEpicBar(ei,gi);buildGantt();});
+
+        row.append(ni,ww,ds,de,sw,pw,db);
+        return row;
+      }
+
+      g.tasks.forEach((t,ti)=>tc.appendChild(mkTaskRow(t,ti)));
+      body.appendChild(tc);
+
+      /* add task btn */
+      const ab=document.createElement('button'); ab.className='btn-add-task';
+      ab.innerHTML=`<svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>Adicionar tarefa`;
+      ab.addEventListener('click',e=>{
+        e.stopPropagation();
+        const nt={name:'Nova tarefa',progress:0,status:'pendente',weight:0.10,w:[1,4],dateStart:'',dateEnd:''};
+        g.tasks.push(nt); tc.appendChild(mkTaskRow(nt,g.tasks.length-1)); refreshEpicBar(ei,gi);
+      });
+      body.appendChild(ab);
+    });
+
+    /* ── footer: save ── */
+    const ft=document.createElement('div'); ft.className='epic-footer';
+    const fn=document.createElement('span'); fn.className='saved-note'; fn.id=`esaved-${ei}`; fn.textContent='✓ Salvo';
+    const fb=document.createElement('button'); fb.className='btn-save-epic'; fb.textContent='Salvar';
+    fb.addEventListener('click',e=>{
+      e.stopPropagation();
+      /* capture title from input before saving */
+      const ti=document.querySelector(`#board-container .epic-wrap:nth-child(${ei+1}) .epic-title-inp`);
+      if(ti) epic.name=ti.value;
+      ST.set('btg_epics_data',EPICS);
+      buildGantt(); buildStatusExec(); buildDashboard();
+      fn.classList.add('show'); setTimeout(()=>fn.classList.remove('show'),2500);
+    });
+    ft.append(fn,fb); body.appendChild(ft);
+
+    card.append(top,body); wrap.appendChild(card); cont.appendChild(wrap);
+  });
+
+  /* ── add new epic button ── */
+  const addWrap=document.createElement('div'); addWrap.className='btn-add-epic-wrap';
+  const addEpicBtn=document.createElement('button'); addEpicBtn.className='btn-add-epic';
+  addEpicBtn.innerHTML=`<svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>Adicionar novo épico`;
+  addEpicBtn.addEventListener('click',()=>{
+    const idx=EPICS.length;
+    const newColor=EC[idx%EC.length];
+    EPICS.push({
+      id:'epic_'+Date.now(), name:'Novo Épico', status:'pendente',
+      nextStep:'', groups:[{label:null,tasks:[]}]
+    });
+    ST.set('btg_epics_data',EPICS); buildBoard(); buildGantt(); buildStatusExec(); buildDashboard();
+  });
+  addWrap.appendChild(addEpicBtn);
+  cont.appendChild(addWrap);
+}
+
+function refreshEpicDates(ei){
+  /* refresh date display on epic top bar after task date change */
+  const dr=epicDateRange(EPICS[ei]);
+  /* find the date range element — rebuild just that epic's top */
+  buildBoard();
+}
+function refreshEpicBar(ei,gi){
+  const p=wProg(allTasks(EPICS[ei]));
+  const b=document.getElementById(`bprog-${ei}`); if(b)b.style.width=p+'%';
+  const c=document.getElementById(`bpct-${ei}`); if(c)c.textContent=p+'%';
+  if(gi!==undefined&&EPICS[ei].groups[gi]&&EPICS[ei].groups[gi].label){const s=document.getElementById(`sgpct-${ei}-${gi}`);if(s)s.textContent=wProg(EPICS[ei].groups[gi].tasks)+'% ponderado';}
+  buildStatusExec();
+}
+
+/* ═══ INCREMENTO FUNCIONAL ═══
+   Sem itens pré-carregados: a lista anterior (13 itens genéricos de
+   backlog de Workfront) era conteúdo herdado do mesmo template usado no
+   dashboard do FTD e foi removida para não haver nenhuma relação de
+   conteúdo entre os dois dashboards. Use "+" na aba Status Executivo
+   para cadastrar os itens reais de incremento funcional do BTG. */
+const INCR_DEFAULT = [];
+let incrItems = ST.get('btg_dcm_incr', null) || [...INCR_DEFAULT];
+
+function buildIncrList() {
+  const il = document.getElementById('incr-list');
+  if (!il) return;
+  il.innerHTML = '';
+  incrItems.forEach((text, i) => {
+    const row = document.createElement('div');
+    row.className = 'incr-item-edit';
+    const num = document.createElement('span');
+    num.className = 'incr-num';
+    num.textContent = String(i+1).padStart(2,'0');
+    const dot = document.createElement('span');
+    dot.className = 'incr-dot-edit';
+    const inp = document.createElement('input');
+    inp.className = 'incr-text-inp';
+    inp.value = text;
+    inp.placeholder = 'Descreva a funcionalidade…';
+    inp.addEventListener('input', e => { incrItems[i] = e.target.value; });
+    const del = document.createElement('button');
+    del.className = 'incr-del-btn';
+    del.title = 'Remover';
+    del.textContent = '×';
+    del.addEventListener('click', () => {
+      incrItems.splice(i, 1);
+      buildIncrList();
+      updateIncrCount();
+    });
+    row.append(num, dot, inp, del);
+    il.appendChild(row);
+  });
+  updateIncrCount();
+}
+
+function addIncrItem() {
+  incrItems.push('');
+  buildIncrList();
+  // focus last input
+  const inputs = document.querySelectorAll('#incr-list .incr-text-inp');
+  if (inputs.length) inputs[inputs.length-1].focus();
+}
+
+function updateIncrCount() {
+  const el = document.getElementById('incr-count');
+  if (el) el.textContent = incrItems.length;
+}
+
+function saveIncrList() {
+  // capture current values from inputs before saving
+  document.querySelectorAll('#incr-list .incr-text-inp').forEach((inp,i) => {
+    incrItems[i] = inp.value;
+  });
+  // filter empty
+  incrItems = incrItems.filter(s => s.trim() !== '');
+  ST.set('btg_dcm_incr', incrItems);
+  buildIncrList();
+  const n = document.getElementById('incr-saved-note');
+  if (n) { n.classList.add('show'); setTimeout(()=>n.classList.remove('show'),2500); }
+}
+
+/* ═══ TEXT BLOCKS — restaurados de forma independente por aba ═══ */
+function restoreSharedBlocks() {
+  /* Cada bloco de texto agora é independente por aba — cada um lê da sua
+     própria chave de armazenamento, sem espelhar para a outra aba. */
+  const fields = [
+    ['se-next-steps',   'btg_dcm_next_steps_se'],
+    ['dash-next-steps', 'btg_dcm_next_steps_dash'],
+    ['se-risks',        'btg_dcm_risks_se'],
+    ['dash-risks',      'btg_dcm_risks_dash'],
+    ['se-decisions',    'btg_dcm_decisions_se'],
+    ['dash-decisions',  'btg_dcm_decisions_dash'],
+    ['dash-dependencies','btg_dcm_dependencies'],
+    ['dash-updates',    'btg_dcm_updates'],
+  ];
+  fields.forEach(([id, key])=>{
+    const val = ST.get(key, null);
+    if (val !== null) { const e=document.getElementById(id); if(e) e.value=val; }
+  });
+}
+
+/* ═══════════════════════════════════════════
+   EXPORTAR PDF — aba Dashboard de Programa
+   ═══════════════════════════════════════════ */
+function downloadDashboardPDF(){
+  downloadTabPDF('view-dashboard','dash-title','dashboard-de-programa-btg','btn-download-pdf','btn-download-pdf-label');
+}
+
+function downloadTabPDF(viewId, titleId, defaultName, btnId, lblId){
+  if (typeof html2pdf === 'undefined') {
+    alert('Não foi possível carregar o gerador de PDF. Verifique sua conexão com a internet e tente novamente.');
+    return;
+  }
+  const el  = document.getElementById(viewId);
+  const btn = document.getElementById(btnId);
+  const lbl = document.getElementById(lblId);
+  if (!el) return;
+
+  if (btn) btn.disabled = true;
+  if (lbl) lbl.textContent = 'Gerando PDF…';
+  el.classList.add('pdf-exporting');
+
+  const titleInp = document.getElementById(titleId);
+  const fname = (titleInp?.value || defaultName)
+    .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') + '.pdf';
+
+  /* Chart.js canvases carry an internal pixel resolution that can be much
+     larger than their on-screen CSS size (for crisp rendering). html2canvas
+     captures that raw resolution instead of the visible size, which pushes
+     the rest of the page out of frame and shows up as a large blank/solid
+     block in the exported PDF. Swapping each chart for a correctly-sized
+     <img> snapshot avoids the mismatch. */
+  const canvases = Array.from(el.querySelectorAll('canvas'));
+  const swaps = canvases.map(cv=>{
+    const rect = cv.getBoundingClientRect();
+    let dataUrl;
+    try { dataUrl = cv.toDataURL('image/png'); } catch(e) { dataUrl = null; }
+    const img = document.createElement('img');
+    if (dataUrl) img.src = dataUrl;
+    img.style.width  = rect.width + 'px';
+    img.style.height = rect.height + 'px';
+    img.style.display = 'block';
+    cv.insertAdjacentElement('afterend', img);
+    cv.style.display = 'none';
+    return { cv, img };
+  });
+
+  /* html2canvas doesn't reliably paint the text value of <textarea>
+     elements (and never renders content beyond what's currently scrolled
+     into view), so long saved notes could come out blank or truncated in
+     the PDF. Swapping each textarea for a plain, identically-styled div
+     with the same text guarantees the full content is captured. */
+  const textareas = Array.from(el.querySelectorAll('textarea'));
+  const taSwaps = textareas.map(ta=>{
+    const rect = ta.getBoundingClientRect();
+    const cs = getComputedStyle(ta);
+    const div = document.createElement('div');
+    div.textContent = ta.value;
+    Object.assign(div.style, {
+      whiteSpace: 'pre-wrap',
+      wordWrap: 'break-word',
+      width: rect.width + 'px',
+      minHeight: rect.height + 'px',
+      boxSizing: 'border-box',
+      fontFamily: cs.fontFamily,
+      fontSize: cs.fontSize,
+      fontWeight: cs.fontWeight,
+      lineHeight: cs.lineHeight,
+      color: cs.color,
+      background: cs.backgroundColor,
+      border: cs.border,
+      borderRadius: cs.borderRadius,
+      padding: cs.padding,
+    });
+    ta.insertAdjacentElement('afterend', div);
+    ta.style.display = 'none';
+    return { ta, div };
+  });
+
+  const restore = () => {
+    swaps.forEach(({cv,img})=>{ img.remove(); cv.style.display=''; });
+    taSwaps.forEach(({ta,div})=>{ div.remove(); ta.style.display=''; });
+    el.classList.remove('pdf-exporting');
+    if (btn) btn.disabled = false;
+    if (lbl) lbl.textContent = 'Baixar PDF';
+  };
+
+  /* Build a PDF page sized to exactly match the tab's own dimensions
+     (instead of a fixed A4 page), so the whole tab always fits on a single
+     page with nothing pushed to a second page or cut off mid-block. */
+  const pad = 24; /* small breathing margin, in px */
+  const rect = el.getBoundingClientRect();
+  const pageW = Math.ceil(rect.width  + pad*2);
+  const pageH = Math.ceil(rect.height + pad*2);
+
+  const opt = {
+    margin: pad,
+    filename: fname,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, backgroundColor: '#0D0E14', useCORS: true },
+    jsPDF: { unit: 'px', format: [pageW, pageH], orientation: pageW >= pageH ? 'landscape' : 'portrait' },
+    pagebreak: { mode: ['avoid-all'], avoid: ['.dash-card','.se-header-strip','.dash-header-strip','.squad-card','.se-progress-card','.epic-card'] }
+  };
+
+  html2pdf().set(opt).from(el).save()
+    .catch(()=>{ alert('Ocorreu um erro ao gerar o PDF. Tente novamente.'); })
+    .finally(restore);
+}
+
+/* ═══ DASHBOARD ═══ */
+function buildDashboard(){
+  let done=0,wip=0,pend=0,blk=0,tot=0;
+  EPICS.forEach(e=>allTasks(e).forEach(t=>{tot++;if(t.status==='concluído')done++;else if(t.status==='em progresso')wip++;else if(t.status==='bloqueado')blk++;else pend++;}));
+  const progs=EPICS.map(e=>wProg(allTasks(e)));
+  const avg=progs.length?Math.round(progs.reduce((a,b)=>a+b,0)/progs.length):0;
+  const ti=progs.length?progs.indexOf(Math.max(...progs)):-1;
+  document.getElementById('k-avg').textContent=avg+'%';
+  document.getElementById('k-done').textContent=done;
+  document.getElementById('k-done-sub').textContent=`de ${tot} tarefas`;
+  document.getElementById('k-wip').textContent=wip;
+  document.getElementById('k-top-val').textContent=ti>=0?EPICS[ti].name:'—';
+  document.getElementById('k-top-sub').textContent=ti>=0?progs[ti]+'% de progresso':'Nenhum épico cadastrado';
+  const dk=false;
+  const gc='rgba(27,63,160,0.07)';
+  const lc='#8892C0';
+  if (dashBarChart) { dashBarChart.destroy(); dashBarChart = null; }
+  if (dashDonutChart) { dashDonutChart.destroy(); dashDonutChart = null; }
+  dashBarChart = new Chart(document.getElementById('barChart'),{type:'bar',data:{labels:EPICS.map(e=>e.name),datasets:[
+    {label:'Concluído',data:progs,backgroundColor:EL.slice(0,EPICS.length),borderColor:EC.slice(0,EPICS.length),borderWidth:1.5,borderRadius:4,borderSkipped:false},
+    {label:'Restante',data:progs.map(p=>100-p),backgroundColor:'rgba(27,63,160,0.05)',borderColor:'transparent',borderWidth:0,borderRadius:4,borderSkipped:false}
+  ]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.datasetIndex===0?` ${ctx.raw}% concluído`:` ${ctx.raw}% restante`}}},scales:{x:{stacked:true,max:100,grid:{color:gc},ticks:{color:lc,font:{size:11},callback:v=>v+'%'},border:{display:false}},y:{stacked:true,grid:{display:false},ticks:{color:lc,font:{size:12}},border:{display:false}}}}});
+  dashDonutChart = new Chart(document.getElementById('donutChart'),{type:'doughnut',data:{labels:['Concluído','Em progresso','Bloqueado','Pendente'],datasets:[{data:[done,wip,blk,pend],backgroundColor:['#0F6E56','#1A35C8','#FF5F6D','#E0E4F5'],borderColor:'#FFFFFF',borderWidth:2,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}`}}}}});
+  const dc=['#0F6E56','#1A35C8','#FF5F6D','#B0B8D8'],dl=['Concluído','Em progresso','Bloqueado','Pendente'],dv=[done,wip,blk,pend];
+  document.getElementById('donut-legend').innerHTML=dl.map((l,i)=>`<div class="donut-legend-item"><div style="display:flex;align-items:center;"><span class="donut-legend-dot" style="background:${dc[i]};"></span>${l}</div><span style="font-weight:600;color:var(--text);">${dv[i]} <span style="font-weight:400;color:var(--text3);">(${tot?Math.round(dv[i]/tot*100):0}%)</span></span></div>`).join('');
+  buildIncrList();
+  const list=document.getElementById('epic-progress-list');
+  list.innerHTML='';
+  EPICS.forEach((e,i)=>{const p=progs[i],ts=allTasks(e),dt=ts.filter(t=>t.status==='concluído').length,wt=ts.filter(t=>t.status==='em progresso').length;
+    const r=document.createElement('div');r.className='epl-row';
+    r.innerHTML=`<div class="epl-header"><div class="epl-name"><span class="epl-dot" style="background:${EC[i]};"></span>${e.name}</div><div style="display:flex;align-items:center;gap:14px;"><span class="epl-meta">${dt}/${ts.length} concluídas · ${wt} em andamento</span><span class="epl-pct">${p}%</span></div></div><div class="epl-track"><div class="epl-fill" style="width:${p}%;background:${EC[i]};"></div></div>`;
+    list.appendChild(r);
+  });
+  /* shared blocks */
+  buildGantt('dash-full-gantt-grid','dash-full-gantt-legend');
+  restoreSharedBlocks();
+  autoGrowAllTextareas('#view-dashboard');
+}
+
+/* ═══ PRODUÇÃO EDITORIAL ═══
+   Sem coleções pré-carregadas: a lista anterior (53 itens: FTD-SE, SIM,
+   Saber Mais, BILINGUISMO, SUPLEMENTARES etc.) era catálogo editorial do
+   FTD e foi removida para não haver nenhum conteúdo herdado de outro
+   programa/cliente. Use "Adicionar nova coleção" na aba Produção
+   Editorial para cadastrar itens reais do BTG. */
+const PE_COLS=[];
+const PE_TASKS_DEF=['Discovery Template de partição','Template consolidado','Template de projeto — Criação Estrutura de Pastas','Integração Estrutura de Pastas às tarefas','Criação do projeto'];
+let peState=ST.get('btg_pe_state',null)||PE_COLS.map(()=>PE_TASKS_DEF.map(n=>({name:n,status:'pendente'})));
+function deriveStatus(ei){const ts=peState[ei];if(!ts||!ts.length)return 'pendente';if(ts.every(t=>t.status==='concluído'))return 'concluído';if(ts.every(t=>t.status==='pendente'))return 'pendente';if(ts.some(t=>t.status==='bloqueado'))return 'bloqueado';return 'em progresso';}
+function buildPeKpis(){
+  const sts=PE_COLS.map((_,ei)=>deriveStatus(ei));
+  const tot=sts.length,done=sts.filter(s=>s==='concluído').length,prog=sts.filter(s=>s==='em progresso').length,blk=sts.filter(s=>s==='bloqueado').length,pend=sts.filter(s=>s==='pendente').length;
+  const pct=v=>tot>0?Math.round(v/tot*100)+'%':'0%';
+  const _peKpisEl=document.getElementById('pe-kpis'); if(!_peKpisEl) return; _peKpisEl.innerHTML=`
+    <div class="pe-kpi"><div class="pe-kpi-swatch" style="background:#9BA3CC;"></div><div><div class="pe-kpi-val">${pend}</div><div class="pe-kpi-label">Pendente</div><div class="pe-kpi-pct">${pct(pend)}</div></div></div>
+    <div class="pe-kpi"><div class="pe-kpi-swatch" style="background:#1A35C8;"></div><div><div class="pe-kpi-val">${prog}</div><div class="pe-kpi-label">Em progresso</div><div class="pe-kpi-pct">${pct(prog)}</div></div></div>
+    <div class="pe-kpi"><div class="pe-kpi-swatch" style="background:#0F6E56;"></div><div><div class="pe-kpi-val">${done}</div><div class="pe-kpi-label">Concluído</div><div class="pe-kpi-pct">${pct(done)}</div></div></div>
+    <div class="pe-kpi"><div class="pe-kpi-swatch" style="background:#FF5C6E;"></div><div><div class="pe-kpi-val">${blk}</div><div class="pe-kpi-label">Bloqueado</div><div class="pe-kpi-pct">${pct(blk)}</div></div></div>
+    <div class="pe-kpi" style="flex:2;min-width:200px;"><div style="flex:1;"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Distribuição — ${tot} épicos</div>
+    <div style="width:100%;height:10px;border-radius:99px;overflow:hidden;background:var(--border);display:flex;gap:2px;">
+      <div style="flex:${done};background:#0F6E56;border-radius:99px;min-width:${done?2:0}px;"></div>
+      <div style="flex:${prog};background:#1A35C8;border-radius:99px;min-width:${prog?2:0}px;"></div>
+      <div style="flex:${blk};background:#FF5C6E;border-radius:99px;min-width:${blk?2:0}px;"></div>
+      <div style="flex:${pend};background:var(--border2);border-radius:99px;min-width:${pend?2:0}px;"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:6px;font-size:11px;color:var(--text3);flex-wrap:wrap;font-weight:500;">
+      <span><span style="color:#0F6E56;font-weight:700;">${pct(done)}</span> concluído</span>
+      <span><span style="color:#1A35C8;font-weight:700;">${pct(prog)}</span> em progresso</span>
+      <span><span style="color:#FF5C6E;font-weight:700;">${pct(blk)}</span> bloqueado</span>
+      <span><span style="font-weight:700;">${pct(pend)}</span> pendente</span>
+    </div></div></div>`;
+  const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  se('dpe-pend',pend);se('dpe-pend-p',pct(pend)+' das coleções');
+  se('dpe-prog',prog);se('dpe-prog-p',pct(prog)+' das coleções');
+  se('dpe-done',done);se('dpe-done-p',pct(done)+' das coleções');
+  se('dpe-pct-done',pct(done));se('dpe-pct-prog',pct(prog));se('dpe-pct-pend',pct(pend));
+  const sf=(id,v)=>{const e=document.getElementById(id);if(e){e.style.flex=v;e.style.minWidth=v>0?'2px':'0';}};
+  sf('dpe-bar-done',done);sf('dpe-bar-prog',prog);sf('dpe-bar-pend',pend||0.001);
+}
+/* ── PE date helpers ── */
+function peEpicDateRange(ei) {
+  const tasks = (peState[ei]||[]);
+  const starts = tasks.map(t=>t.dateStart).filter(Boolean).sort();
+  const ends   = tasks.map(t=>t.dateEnd).filter(Boolean).sort();
+  return { s: starts[0]||'', e: ends[ends.length-1]||'' };
+}
+function refreshPeEpicDates(ei) {
+  const dr = peEpicDateRange(ei);
+  const dsEl = document.getElementById(`pe-date-s-${ei}`);
+  const deEl = document.getElementById(`pe-date-e-${ei}`);
+  if (dsEl) dsEl.textContent = fmtDate(dr.s);
+  if (deEl) deEl.textContent = fmtDate(dr.e);
+}
+/* add new PE collection */
+let PE_COLS_STATE = ST.get('btg_pe_cols_extra', []);
+function addPeCollection() {
+  const n = PE_COLS.length + PE_COLS_STATE.length + 1;
+  const newCol = {n, selo:'Novo Selo', title:'Nova Coleção', tipo:'IMP', custom:true};
+  PE_COLS_STATE.push(newCol);
+  peState.push([{name:'Discovery Template de partição',status:'pendente',dateStart:'',dateEnd:'',comment:''}]);
+  ST.set('btg_pe_cols_extra', PE_COLS_STATE);
+  ST.set('btg_pe_state', peState);
+  buildPE();
+}
+function refreshPeBadge(ei){const s=deriveStatus(ei);const el=document.getElementById(`pe-badge-${ei}`);if(el){el.textContent=sLabel(s);el.className='status-sel '+sClass(s);el.style.cssText='display:inline-flex;align-items:center;cursor:default;pointer-events:none;padding:4px 10px;'}buildPeKpis();}
+function buildPE(){
+  buildPeKpis();const tbody=document.getElementById('pe-tbody');if(!tbody)return;tbody.innerHTML='';
+  const _deleted=ST.get('btg_pe_cols_deleted',[]);
+  const _allCols=[...PE_COLS.filter(col=>!_deleted.includes(col.n)),...PE_COLS_STATE];
+  _allCols.forEach((col,ei)=>{
+    if(!peState[ei])peState[ei]=PE_TASKS_DEF.map(n=>({name:n,status:'pendente'}));
+    /* determine if custom (user-added) collection */
+    const isCustom = !!col.custom;
+    const etr=document.createElement('tr');etr.className='pe-epic-row open';
+    /* expand btn */
+    const tdex=document.createElement('td');const exBtn=document.createElement('div');exBtn.className='pe-expand-btn';exBtn.innerHTML=`<svg viewBox="0 0 16 16" fill="none" stroke-width="1.5" stroke="currentColor"><polyline points="4,6 8,10 12,6"/></svg>`;tdex.appendChild(exBtn);
+    /* number */
+    const tdn=document.createElement('td');tdn.textContent=col.n;tdn.style.cssText='font-size:12px;color:var(--text3);';
+    /* selo — editable for custom, static for built-in */
+    const tds=document.createElement('td');
+    if(isCustom){
+      const seloInp=document.createElement('input');seloInp.className='pe-col-selo-inp';seloInp.value=col.selo;seloInp.placeholder='Selo';
+      seloInp.addEventListener('change',e=>{col.selo=e.target.value;});seloInp.addEventListener('click',e=>e.stopPropagation());tds.appendChild(seloInp);
+    } else { tds.textContent=col.selo; tds.style.cssText='font-size:12px;color:var(--text2);'; }
+    /* title — editable for custom, static for built-in */
+    const tdt=document.createElement('td');tdt.className='pe-epic-name';
+    if(isCustom){
+      const titleInp=document.createElement('input');titleInp.className='pe-col-title-inp';titleInp.value=col.title;titleInp.placeholder='Título da coleção';
+      titleInp.addEventListener('change',e=>{col.title=e.target.value;});titleInp.addEventListener('click',e=>e.stopPropagation());tdt.appendChild(titleInp);
+    } else { tdt.textContent=col.title; }
+    /* tipo badge */
+    const tdtp=document.createElement('td');const tbadge=document.createElement('span');tbadge.className='pe-tipo-badge '+(col.tipo==='IMP'?'pe-tipo-imp':'pe-tipo-dig');tbadge.textContent=col.tipo;tdtp.appendChild(tbadge);
+    /* date columns derived from tasks */
+    const dr0=peEpicDateRange(ei);
+    const tdeds=document.createElement('td');tdeds.style.cssText='font-size:11px;color:var(--text3);white-space:nowrap;';
+    const dsSpan=document.createElement('span');dsSpan.id=`pe-date-s-${ei}`;dsSpan.textContent=fmtDate(dr0.s);tdeds.appendChild(dsSpan);
+    const tdede=document.createElement('td');tdede.style.cssText='font-size:11px;color:var(--text3);white-space:nowrap;';
+    const deSpan=document.createElement('span');deSpan.id=`pe-date-e-${ei}`;deSpan.textContent=fmtDate(dr0.e);tdede.appendChild(deSpan);
+    /* status badge */
+    const tdst=document.createElement('td');const ebadge=document.createElement('span');ebadge.id=`pe-badge-${ei}`;const is=deriveStatus(ei);ebadge.className='status-sel '+sClass(is);ebadge.textContent=sLabel(is);ebadge.style.cssText='display:inline-flex;align-items:center;cursor:default;pointer-events:none;padding:4px 10px;';tdst.appendChild(ebadge);
+    /* comment placeholder */
+    const tdcm=document.createElement('td');tdcm.style.cssText='font-size:11px;color:var(--text3);';tdcm.textContent='—';
+    /* delete collection — always available */
+    const tddl=document.createElement('td');
+    const delColBtn=document.createElement('button');delColBtn.className='btn-del-col';delColBtn.title='Excluir coleção';delColBtn.textContent='🗑';
+    delColBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      const nm=col.title||`coleção ${col.n}`;
+      if(!confirm(`Excluir "${nm}"? Esta ação não pode ser desfeita.`)) return;
+      /* remove from PE_COLS_STATE if custom, or mark as deleted */
+      if(isCustom){
+        const idx=PE_COLS_STATE.indexOf(col);
+        if(idx>=0){PE_COLS_STATE.splice(idx,1);peState.splice(ei,1);}
+        ST.set('btg_pe_cols_extra',PE_COLS_STATE);
+      } else {
+        /* for built-in, we hide by marking deleted in a separate list */
+        const del=ST.get('btg_pe_cols_deleted',[]);
+        del.push(col.n); ST.set('btg_pe_cols_deleted',del);
+        peState.splice(ei,1);
+      }
+      ST.set('btg_pe_state',peState);
+      buildPE();
+    });
+    tddl.appendChild(delColBtn);
+    etr.append(tdex,tdn,tds,tdt,tdtp,tdeds,tdede,tdst,tdcm,tddl);
+    etr.addEventListener('click',e=>{
+      if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return;
+      const open=etr.classList.toggle('open');
+      tbody.querySelectorAll(`[data-pep="${ei}"]`).forEach(r=>r.classList.toggle('vis',open));
+    });
+    tbody.appendChild(etr);
+    function mkPeTask(task,ti){
+      const tr=document.createElement('tr');tr.className='pe-task-row vis';tr.setAttribute('data-pep',ei);
+      /* expand placeholder */
+      const te=document.createElement('td');
+      /* num */
+      const tn=document.createElement('td');tn.style.cssText='font-size:11px;color:var(--text3);';tn.textContent=String(ti+1).padStart(2,'0');
+      /* selo placeholder */
+      const ts2=document.createElement('td');
+      /* name */
+      const ttk=document.createElement('td');ttk.className='pe-task-name-cell';
+      const ni=document.createElement('input');ni.className='pe-task-inp';ni.value=task.name;
+      ni.addEventListener('change',e=>{task.name=e.target.value;});ni.addEventListener('click',e=>e.stopPropagation());ttk.appendChild(ni);
+      /* tipo placeholder */
+      const ttyp=document.createElement('td');
+      /* date start */
+      const tds=document.createElement('td');
+      const ds=document.createElement('input');ds.type='date';ds.className='date-inp';ds.style.fontSize='11px';ds.value=task.dateStart||'';
+      ds.addEventListener('change',e=>{task.dateStart=e.target.value;refreshPeEpicDates(ei);});ds.addEventListener('click',e=>e.stopPropagation());tds.appendChild(ds);
+      /* date end */
+      const tde=document.createElement('td');
+      const de=document.createElement('input');de.type='date';de.className='date-inp';de.style.fontSize='11px';de.value=task.dateEnd||'';
+      de.addEventListener('change',e=>{task.dateEnd=e.target.value;refreshPeEpicDates(ei);});de.addEventListener('click',e=>e.stopPropagation());tde.appendChild(de);
+      /* status */
+      const tst=document.createElement('td');
+      const sel=mkSel(task.status,val=>{task.status=val;refreshPeBadge(ei);});tst.appendChild(sel);
+      /* comment */
+      const tcm=document.createElement('td');
+      const cmt=document.createElement('input');cmt.className='pe-comment-inp';cmt.value=task.comment||'';cmt.placeholder='Comentário…';
+      cmt.addEventListener('change',e=>{task.comment=e.target.value;});cmt.addEventListener('click',e=>e.stopPropagation());tcm.appendChild(cmt);
+      /* delete */
+      const tdel=document.createElement('td');const db=document.createElement('button');db.className='del-btn';db.textContent='×';
+      db.addEventListener('click',e=>{e.stopPropagation();peState[ei].splice(ti,1);buildPE();});tdel.appendChild(db);
+      tr.append(te,tn,ts2,ttk,ttyp,tds,tde,tst,tcm,tdel);return tr;
+    }
+    peState[ei].forEach((task,ti)=>tbody.appendChild(mkPeTask(task,ti)));
+    const addTr=document.createElement('tr');addTr.className='pe-add-row vis';addTr.setAttribute('data-pep',ei);
+    const addTd=document.createElement('td');addTd.setAttribute('colspan','10');addTd.className='pe-add-cell';
+    const addBtn=document.createElement('button');addBtn.className='btn-add-pe';addBtn.innerHTML=`<svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>Adicionar tarefa`;
+    addBtn.addEventListener('click',e=>{e.stopPropagation();peState[ei].push({name:'Nova tarefa',status:'pendente',dateStart:'',dateEnd:'',comment:''});buildPE();});
+    addTd.appendChild(addBtn);addTr.appendChild(addTd);tbody.appendChild(addTr);
+    const saveTr=document.createElement('tr');saveTr.className='pe-save-row vis';saveTr.setAttribute('data-pep',ei);
+    const saveTd=document.createElement('td');saveTd.setAttribute('colspan','10');saveTd.className='pe-save-cell';
+    const saveInner=document.createElement('div');saveInner.className='pe-save-inner';
+    const sn=document.createElement('span');sn.className='saved-note';sn.id=`pe-saved-${ei}`;sn.textContent='✓ Salvo';
+    const sb=document.createElement('button');sb.className='btn-save-epic';sb.textContent='Salvar';
+    sb.addEventListener('click',e=>{e.stopPropagation();ST.set('btg_pe_state',peState);sn.classList.add('show');setTimeout(()=>sn.classList.remove('show'),2500);});
+    saveInner.append(sn,sb);saveTd.appendChild(saveInner);saveTr.appendChild(saveTd);tbody.appendChild(saveTr);
+  });
+  /* ── add new collection button ── */
+  const addColWrap=document.createElement('div'); addColWrap.className='btn-add-col-wrap';
+  const addColBtn=document.createElement('button'); addColBtn.className='btn-add-col';
+  addColBtn.innerHTML=`<svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>Adicionar nova coleção`;
+  addColBtn.addEventListener('click',()=>addPeCollection());
+  addColWrap.appendChild(addColBtn);
+  document.querySelector('.pe-table-wrap').appendChild(addColWrap);
+}
+
+/* ═══ GANTT ═══ */
+const gExp={};
+/* Gantt timeline — derivado das datas reais (dateStart/dateEnd) definidas
+   por tarefa na aba Épicos. Quando uma tarefa ainda não tem datas
+   preenchidas, cai de volta na posição semanal (t.w) apenas como
+   estimativa provisória, até que datas reais sejam definidas. */
+const GANTT_PROJECT_START = new Date(2026, 2, 2); /* 2 mar 2026 — base do fallback por semana */
+const GANTT_MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+function ganttWeekToDate(weekNum){
+  const d = new Date(GANTT_PROJECT_START.getTime());
+  d.setDate(d.getDate() + (Math.max(1,weekNum||1) - 1) * 7);
+  return d;
+}
+function ganttParseDate(str){
+  if(!str) return null;
+  const [y,m,d] = str.split('-').map(Number);
+  if(!y||!m||!d) return null;
+  return new Date(y, m-1, d);
+}
+/* Data efetiva de uma tarefa: prioriza dateStart/dateEnd (editados na aba
+   Épicos); usa a posição semanal (w) apenas quando a tarefa ainda não tem
+   datas reais definidas. */
+function taskDateRange(t){
+  const start = ganttParseDate(t.dateStart) || ganttWeekToDate(t.w[0]);
+  const end   = ganttParseDate(t.dateEnd)   || ganttWeekToDate(t.w[1]);
+  return { start, end: end < start ? start : end };
+}
+/* Barra empilhada por status — usa exatamente as mesmas cores da Legenda
+   (Concluído/Em progresso/Bloqueado/Pendente), proporcional à quantidade
+   de tarefas em cada status. Mantém o código de cores consistente em
+   qualquer nível (épico, subgrupo ou tarefa). */
+const GANTT_STATUS_ORDER=['concluído','em progresso','bloqueado','pendente'];
+function ganttStackBarHTML(tasks, heightPx){
+  const total=tasks.length||1;
+  const segs=GANTT_STATUS_ORDER.map(s=>{
+    const n=tasks.filter(t=>t.status===s).length;
+    if(!n) return '';
+    return `<div style="flex:${n} 0 0;background:${barClr(s)};"></div>`;
+  }).join('');
+  return `<div class="g-bar-wrap" style="height:${heightPx}px;display:flex;">${segs}</div>`;
+}
+
+/* Intervalo de meses do cronograma, calculado a partir das datas reais de
+   todas as tarefas de todos os épicos. Reutilizado pela Gantt completa e
+   pela mini timeline da Status Executivo, garantindo que ambas usem
+   exatamente a mesma fonte de dados. */
+function ganttMonthRange(){
+  let minD=null, maxD=null;
+  EPICS.forEach(epic=>{
+    allTasks(epic).forEach(t=>{
+      const {start,end}=taskDateRange(t);
+      if(!minD||start<minD) minD=start;
+      if(!maxD||end>maxD)   maxD=end;
+    });
+  });
+  if(!minD||!maxD){
+    minD=new Date(GANTT_PROJECT_START.getTime());
+    maxD=new Date(GANTT_PROJECT_START.getTime()); maxD.setMonth(maxD.getMonth()+11);
+  }
+  const months=[];
+  let cy=minD.getFullYear(), cm=minD.getMonth();
+  const endY=maxD.getFullYear(), endM=maxD.getMonth();
+  while(cy<endY || (cy===endY && cm<=endM)){
+    months.push({y:cy,m:cm,label:`${GANTT_MESES[cm]}/${String(cy).slice(2)}`});
+    cm++; if(cm>11){cm=0;cy++;}
+  }
+  const monthIndexOf=d=>(d.getFullYear()-months[0].y)*12+(d.getMonth()-months[0].m)+1;
+  return {months, monthIndexOf};
+}
+
+function buildGantt(gridId, legendId){
+  gridId = gridId || 'gantt-grid';
+  legendId = legendId || 'gantt-legend';
+  const grid=document.getElementById(gridId);if(!grid)return;grid.innerHTML='';
+
+  const {months, monthIndexOf} = ganttMonthRange();
+  const TOTAL_MONTHS=months.length;
+
+  const nW=200,mW=Math.max(52,Math.floor((960-nW)/TOTAL_MONTHS));
+  const cols=`${nW}px ${Array(TOTAL_MONTHS).fill(mW+'px').join(' ')}`;
+
+  /* ── header row: meses ── */
+  const hd=document.createElement('div');hd.className='gantt-head-row';hd.style.gridTemplateColumns=cols;
+  hd.innerHTML=`<div class="g-head-name">Épico / Tarefa</div>`+
+    months.map(mo=>`<div class="g-head-week" style="font-size:9px;font-weight:700;">${mo.label}</div>`).join('');
+  grid.appendChild(hd);
+
+  EPICS.forEach((epic,ei)=>{
+    const color=EC[ei%EC.length];
+    const prog=wProg(allTasks(epic));
+    const tasks=allTasks(epic);if(!tasks.length)return;
+    const ranges=tasks.map(taskDateRange);
+    const eStart=Math.min(...ranges.map(r=>monthIndexOf(r.start)));
+    const eEnd=Math.max(...ranges.map(r=>monthIndexOf(r.end)))+1;
+    const expanded=gExp[epic.id]!==false;
+
+    /* ── epic row ── */
+    const eRow=document.createElement('div');eRow.className='gantt-row erow';eRow.style.gridTemplateColumns=cols;
+    const nd=document.createElement('div');nd.className='g-row-name epic';
+    nd.innerHTML=`<span class="g-tog${expanded?' exp':''}"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6,4 10,8 6,12"/></svg></span><span style="width:10px;height:10px;border-radius:2px;background:${color};flex-shrink:0;display:inline-block;"></span><span style="overflow:hidden;text-overflow:ellipsis;">${epic.name}</span><span style="font-size:9px;color:var(--text3);font-weight:400;margin-left:auto;flex-shrink:0;">${prog}%</span>`;
+    eRow.appendChild(nd);
+    for(let m=1;m<=TOTAL_MONTHS;m++){
+      const cell=document.createElement('div');cell.className='g-cell';
+      if(m>=eStart&&m<eEnd) cell.innerHTML=ganttStackBarHTML(tasks,13);
+      eRow.appendChild(cell);
+    }
+    eRow.addEventListener('click',()=>{gExp[epic.id]=!expanded;buildGantt(gridId,legendId);});
+    grid.appendChild(eRow);
+
+    epic.groups.forEach((g,gi)=>{
+      if(g.label&&g.tasks.length){
+        const gRanges=g.tasks.map(taskDateRange);
+        const sgS=Math.min(...gRanges.map(r=>monthIndexOf(r.start)));
+        const sgE=Math.max(...gRanges.map(r=>monthIndexOf(r.end)))+1;
+        const sgRow=document.createElement('div');sgRow.className='gantt-row sgrow'+(expanded?'':' hidden');sgRow.style.gridTemplateColumns=cols;
+        let sgCells=`<div class="g-row-name subg">↳ ${g.label}</div>`;
+        for(let m=1;m<=TOTAL_MONTHS;m++){
+          sgCells+=m>=sgS&&m<sgE
+            ?`<div class="g-cell">${ganttStackBarHTML(g.tasks,8)}</div>`
+            :`<div class="g-cell"></div>`;
+        }
+        sgRow.innerHTML=sgCells;
+        grid.appendChild(sgRow);
+      }
+      g.tasks.forEach(t=>{
+        const {start,end}=taskDateRange(t);
+        const tS=monthIndexOf(start), tE=monthIndexOf(end)+1;
+        const tRow=document.createElement('div');tRow.className='gantt-row trow'+(expanded?'':' hidden');tRow.style.gridTemplateColumns=cols;
+        const bc=barClr(t.status),bl=barLgt(t.status);
+        let tCells=`<div class="g-row-name sub" style="${g.label?'padding-left:36px;':''};overflow:hidden;text-overflow:ellipsis;">${t.name}</div>`;
+        for(let m=1;m<=TOTAL_MONTHS;m++){
+          tCells+=m>=tS&&m<tE
+            ?`<div class="g-cell"><div class="g-bar-wrap"><div class="g-bar-bg" style="background:${bl};"></div><div class="g-bar-prog" style="width:${t.progress}%;background:${bc};"></div></div></div>`
+            :`<div class="g-cell"></div>`;
+        }
+        tRow.innerHTML=tCells;
+        grid.appendChild(tRow);
+      });
+    });
+  });
+
+  const lg=document.getElementById(legendId);
+  if(!lg) return;
+  const rangeLabel = months.length ? `${months[0].label} → ${months[months.length-1].label}` : '';
+  lg.innerHTML='<span style="font-size:11px;color:var(--text3);margin-right:4px;">Legenda:</span>'+
+    [{c:'#0F6E56',l:'#D4F0E8',n:'Concluído'},{c:'#1A35C8',l:'#D6DCFA',n:'Em progresso'},{c:'#FF5C6E',l:'#FFE0E3',n:'Bloqueado'},{c:'#9BA3CC',l:'#EEF1FB',n:'Pendente'}]
+    .map(i=>`<div class="legend-item"><div class="legend-swatch" style="background:${i.l};border:1px solid ${i.c};"><div style="position:absolute;inset:0;background:${i.c};width:55%;"></div></div>${i.n}</div>`).join('')+
+    `<span style="font-size:11px;color:var(--text3);margin-left:8px;">· ${rangeLabel} · Clique no épico para expandir/recolher</span>`;
+}
+
+/* ═══ TABS ═══ */
+const TABS=['status','dashboard','board','gantt','roadmap'];
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',TABS[i]===tab));
+  TABS.forEach(t=>document.getElementById('view-'+t).classList.toggle('active',t===tab));
+  if(tab==='gantt')     buildGantt();
+  if(tab==='status')  { buildStatusExec(); restoreDashHeader(); }
+  if(tab==='dashboard'){ buildDashboard(); restoreDashHeader(); }
+}
+
+/* ═══ DASH HEADER FUNCTIONS ═══ */
+function saveDashHeader(prefix) {
+  prefix = prefix || 'dash';
+  const other = prefix === 'dash' ? 'se' : 'dash';
+  const fields = {
+    title: document.getElementById(prefix+'-title')?.value || '',
+    pm:    document.getElementById(prefix+'-pm')?.value    || '',
+    bpm:   document.getElementById(prefix+'-bpm')?.value   || '',
+    dm:    document.getElementById(prefix+'-dm')?.value    || '',
+  };
+  ST.set('btg_dcm_dash_header', fields);
+  /* sync title + meta fields to the other tab's header block */
+  const t=document.getElementById(other+'-title'); if(t) t.value=fields.title;
+  const p=document.getElementById(other+'-pm');    if(p) p.value=fields.pm;
+  const b=document.getElementById(other+'-bpm');   if(b) b.value=fields.bpm;
+  const dm=document.getElementById(other+'-dm');   if(dm) dm.value=fields.dm;
+  /* sync any custom role/name fields between both tabs */
+  buildAllMetaExtra();
+  const n=document.getElementById(prefix+'-header-saved');
+  if(n){n.classList.add('show');setTimeout(()=>n.classList.remove('show'),2500);}
+  const on=document.getElementById(other+'-header-saved');
+  if(on){on.classList.add('show');setTimeout(()=>on.classList.remove('show'),2500);}
+}
+
+function restoreDashHeader() {
+  const saved = ST.get('btg_dcm_dash_header', null);
+  const months=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const d=new Date();
+  const dateStr=`${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  ['dash-header-date','se-date'].forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent=dateStr; });
+  if (saved) {
+    ['dash','se'].forEach(prefix=>{
+      const t=document.getElementById(prefix+'-title');  if(t) t.value=(saved.title!==undefined&&saved.title!==null)?saved.title:'Status Executivo — DCM Fase II';
+      const p=document.getElementById(prefix+'-pm');     if(p) p.value=(saved.pm!==undefined&&saved.pm!==null)?saved.pm:'Thaís Balsi';
+      const b=document.getElementById(prefix+'-bpm');    if(b) b.value=(saved.bpm!==undefined&&saved.bpm!==null)?saved.bpm:'';
+      const dm=document.getElementById(prefix+'-dm');    if(dm) dm.value=(saved.dm!==undefined&&saved.dm!==null)?saved.dm:'';
+    });
+  }
+  /* restore status geral sync */
+  const sg=ST.get('btg_dcm_status_geral','planejado');
+  ['dash-status-geral','se-status-geral'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(sel){sel.value=sg;sel.className='se-status-pill se-pill-'+sg;}
+  });
+  /* restore custom role/name fields on both tabs */
+  buildAllMetaExtra();
+  /* restore squad collapsed state */
+  const collapsed=ST.get('btg_dcm_squad_collapsed',false);
+  if(collapsed) _applySquadCollapse(true,false);
+}
+
+function toggleSquad() {
+  const col=document.getElementById('squad-collapsible');
+  if(!col) return;
+  const isCollapsed=col.classList.contains('collapsed');
+  _applySquadCollapse(!isCollapsed,true);
+}
+
+function _applySquadCollapse(collapse,save) {
+  const col=document.getElementById('squad-collapsible');
+  const icon=document.getElementById('squad-toggle-icon');
+  const txt=document.getElementById('squad-toggle-txt');
+  if(!col) return;
+  if(collapse){
+    col.classList.add('collapsed');
+    if(icon) icon.style.transform='rotate(-90deg)';
+    if(txt)  txt.textContent='Expandir';
+  } else {
+    col.classList.remove('collapsed');
+    if(icon) icon.style.transform='rotate(0deg)';
+    if(txt)  txt.textContent='Minimizar';
+  }
+  if(save) ST.set('btg_dcm_squad_collapsed',collapse);
+}
+
+/* ═══ INIT ═══
+   Modo local (Firebase não configurado): renderiza tudo imediatamente,
+   como sempre funcionou, usando localStorage.
+   Modo Firebase (FIREBASE_READY): a tela de login fica visível até o
+   usuário autenticar; só então os dados são carregados do Firestore e o
+   dashboard é montado — evita mostrar dados de ninguém antes do login. */
+function boot(){
+  const d=new Date(),months=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  document.getElementById('updated-date').textContent=`Atualizado em ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  document.getElementById('footer-txt').textContent=`BTG DCM DTTD — Relatórios de Programa · Exportado em ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  buildAllSquads();
+  buildAllMetaExtra();
+  restoreDashHeader();
+  buildStatusExec();
+  buildDashboard();
+  buildBoard();
+  buildGantt();
+  wireAutoGrowTextareas();
+}
+if (FIREBASE_READY) { fbInit(); } else { boot(); }
+</script>
+</body>
+</html>
