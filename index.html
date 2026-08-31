@@ -602,12 +602,19 @@ footer { text-align:center; padding:22px 36px; font-size:11px; color:var(--text3
 <div id="fb-lock" class="hidden">
   <div class="fb-lock-card">
     <div class="fb-lock-title">Dashboard de Programa BTG</div>
-    <div class="fb-lock-sub">Digite a senha da equipe para acessar</div>
+    <div class="fb-lock-sub">Digite seu e-mail e senha para acessar</div>
+    <input type="email" id="fb-lock-email" class="fb-lock-input" placeholder="E-mail" autocomplete="username" style="text-align:left;letter-spacing:normal;"/>
     <input type="password" id="fb-lock-pass" class="fb-lock-input" placeholder="Senha" autocomplete="current-password"/>
     <button type="button" id="fb-lock-btn" class="fb-lock-btn">Entrar</button>
     <div id="fb-lock-err" class="fb-lock-err"></div>
     <div class="fb-lock-note">Os dados deste dashboard são compartilhados entre todos que entrarem com a senha da equipe.</div>
   </div>
+</div>
+
+<!-- ══ AVISO DE MODO SOMENTE LEITURA — visível só para usuários com papel
+     'viewer'; ver applyReadOnlyMode() ══ -->
+<div id="read-only-banner" style="display:none;background:var(--gold);color:#151204;text-align:center;font-size:12px;font-weight:700;padding:7px 12px;letter-spacing:.02em;">
+  👁 Modo somente leitura — você está visualizando este dashboard sem permissão de edição.
 </div>
 
 <!-- ══ HEADER ══ -->
@@ -1066,14 +1073,43 @@ Pendente: alinhamento de escopo financeiro Fase II.</textarea>
    navegador dela — nada é compartilhado). */
 const SUPABASE_URL = "https://sokkoxzmwynpxhapkiaw.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNva2tveHptd3lucHhoYXBraWF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNzI2MDMsImV4cCI6MjEwMzc0ODYwM30.S6KyPYwz608yS5wYrWQuVzdxNlYEvSIcBIW2C0lmvWY";
-/* E-mail do usuário único compartilhado criado em Supabase Authentication.
-   Não precisa ser um e-mail real — é só um identificador interno; quem
-   acessa o dashboard só digita a SENHA na tela de login. */
-const SUPABASE_LOGIN_EMAIL = "btg.team@vilt-group.com";
 const SUPABASE_READY = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 const sb = SUPABASE_READY ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 let _fbCache={};
+
+/* ═══ CONTROLE DE ACESSO — editor vs. visualizador ═══
+   'editor' pode gravar (a política de RLS do kv_store no Supabase também
+   exige isso, então mesmo contornando a interface a gravação seria
+   recusada pelo banco). 'viewer' é o padrão "seguro" — se a consulta ao
+   papel falhar por qualquer motivo, a pessoa cai como somente leitura,
+   nunca como editora. */
+let currentUserRole = 'viewer';
+async function loadUserRole() {
+  if (!SUPABASE_READY) { currentUserRole = 'editor'; return; }
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { currentUserRole = 'viewer'; return; }
+  const { data, error } = await sb.from('user_roles').select('role').eq('user_id', user.id).single();
+  currentUserRole = (!error && data && data.role === 'editor') ? 'editor' : 'viewer';
+}
+const READ_ONLY_ALLOWED_IDS = [];
+function applyReadOnlyMode() {
+  const banner = document.getElementById('read-only-banner');
+  if (currentUserRole === 'editor') { if (banner) banner.style.display = 'none'; return; }
+  if (banner) banner.style.display = 'block';
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    if (READ_ONLY_ALLOWED_IDS.includes(el.id)) return;
+    el.disabled = true;
+  });
+  document.querySelectorAll('button').forEach(btn => {
+    if (btn.classList.contains('tab-btn')) return;
+    if (btn.classList.contains('btn-download-pdf')) return;
+    if (btn.classList.contains('btn-squad-toggle')) return;
+    btn.disabled = true;
+    btn.style.opacity = '0.45';
+    btn.style.cursor = 'not-allowed';
+  });
+}
 
 /* ═══ STORAGE ═══
    Todas as chaves usam o prefixo "btg_" para garantir que este dashboard
@@ -1108,13 +1144,15 @@ function fbHideLock(){
   const el=document.getElementById('fb-lock'); if(el) el.classList.add('hidden');
 }
 async function fbDoLogin(){
+  const email=document.getElementById('fb-lock-email').value.trim();
   const pass=document.getElementById('fb-lock-pass').value;
   const btn=document.getElementById('fb-lock-btn');
+  if(!email){ fbShowLock('Digite o e-mail.'); return; }
   if(!pass){ fbShowLock('Digite a senha.'); return; }
   btn.disabled=true;
-  const {error} = await sb.auth.signInWithPassword({email:SUPABASE_LOGIN_EMAIL, password:pass});
+  const {error} = await sb.auth.signInWithPassword({email, password:pass});
   btn.disabled=false;
-  if(error){ fbShowLock('Senha incorreta. Tente novamente.'); return; }
+  if(error){ fbShowLock('E-mail ou senha incorretos. Tente novamente.'); return; }
   await fbStartSync();
 }
 async function fbStartSync(){
@@ -1132,11 +1170,13 @@ async function fbStartSync(){
   incrItems = ST.get('btg_dcm_incr', null) || [...INCR_DEFAULT];
   peState = ST.get('btg_pe_state', null) || PE_COLS.map(()=>PE_TASKS_DEF.map(n=>({name:n,status:'pendente'})));
   PE_COLS_STATE = ST.get('btg_pe_cols_extra', []);
+  await loadUserRole();
   fbHideLock();
   boot();
 }
 async function fbInit(){
   document.getElementById('fb-lock-btn').addEventListener('click', fbDoLogin);
+  document.getElementById('fb-lock-email').addEventListener('keydown', e=>{ if(e.key==='Enter') fbDoLogin(); });
   document.getElementById('fb-lock-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') fbDoLogin(); });
   const {data:{session}} = await sb.auth.getSession();
   if(session){ await fbStartSync(); } else { fbShowLock(); }
@@ -2394,6 +2434,7 @@ function boot(){
   buildBoard();
   buildGantt();
   wireAutoGrowTextareas();
+  applyReadOnlyMode();
 }
 if (SUPABASE_READY) { fbInit(); } else { boot(); }
 </script>
