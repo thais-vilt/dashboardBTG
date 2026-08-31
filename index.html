@@ -1124,6 +1124,14 @@ async function fbStartSync(){
     _fbCache = {};
     (data||[]).forEach(row=>{ _fbCache[row.key]=row.value; });
   }catch(e){ console.error('Falha ao carregar dados do Supabase:', e); _fbCache={}; }
+  /* estas variáveis são montadas mais abaixo no script usando ST.get, antes
+     dos dados do Supabase terminarem de chegar (chamada assíncrona) — por
+     isso precisam ser recarregadas aqui agora que _fbCache já está populado,
+     senão o dashboard renderiza com os valores padrão vazios. */
+  EPICS = ST.get('btg_epics_data', null) || JSON.parse(JSON.stringify(EPICS_DEF));
+  incrItems = ST.get('btg_dcm_incr', null) || [...INCR_DEFAULT];
+  peState = ST.get('btg_pe_state', null) || PE_COLS.map(()=>PE_TASKS_DEF.map(n=>({name:n,status:'pendente'})));
+  PE_COLS_STATE = ST.get('btg_pe_cols_extra', []);
   fbHideLock();
   boot();
 }
