@@ -595,9 +595,9 @@ footer { text-align:center; padding:22px 36px; font-size:11px; color:var(--text3
 </head>
 <body>
 
-<!-- ══ LOCK SCREEN — login com senha compartilhada (Firebase Auth) ══
-     Fica oculto (.hidden) se o Firebase não estiver configurado ainda
-     (modo local, ver FIREBASE_READY no bloco de script principal) ou depois
+<!-- ══ LOCK SCREEN — login com senha compartilhada (Supabase Auth) ══
+     Fica oculto (.hidden) se o Supabase não estiver configurado ainda
+     (modo local, ver SUPABASE_READY no bloco de script principal) ou depois
      que o login é feito com sucesso. -->
 <div id="fb-lock" class="hidden">
   <div class="fb-lock-card">
@@ -1056,50 +1056,42 @@ Pendente: alinhamento de escopo financeiro Fase II.</textarea>
 <footer id="footer-txt"></footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<!-- Firebase (compat build) — só é usado se firebaseConfig abaixo for preenchido.
-     Ver guia de configuração enviado junto com este arquivo. -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- Supabase — só é usado se SUPABASE_URL/SUPABASE_ANON_KEY abaixo forem preenchidos. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ═══ FIREBASE — dados compartilhados entre todos os usuários ═══
-   Preencha firebaseConfig abaixo com os valores do SEU projeto Firebase
-   (veja o guia de configuração enviado junto com este arquivo). Enquanto
-   ficar com os placeholders "COLE_AQUI", o dashboard funciona sozinho, no
-   modo local antigo (cada pessoa só edita sua própria cópia, salva no
+/* ═══ SUPABASE — dados compartilhados entre todos os usuários ═══
+   Preencha SUPABASE_URL e SUPABASE_ANON_KEY abaixo com os valores do SEU
+   projeto Supabase. Enquanto ficarem vazios, o dashboard funciona sozinho,
+   no modo local antigo (cada pessoa só edita sua própria cópia, salva no
    navegador dela — nada é compartilhado). */
-const firebaseConfig = {
-  apiKey: "COLE_AQUI",
-  authDomain: "COLE_AQUI",
-  projectId: "COLE_AQUI",
-  storageBucket: "COLE_AQUI",
-  messagingSenderId: "COLE_AQUI",
-  appId: "COLE_AQUI",
-};
-/* E-mail do usuário único compartilhado criado em Firebase Authentication
-   (passo 3 do guia). Não precisa ser um e-mail real — é só um identificador
-   interno; quem acessa o dashboard só digita a SENHA na tela de login. */
-const FIREBASE_LOGIN_EMAIL = "equipe@dashboard-btg.app";
-const FIREBASE_READY = !!(firebaseConfig.apiKey && firebaseConfig.apiKey !== "COLE_AQUI");
+const SUPABASE_URL = "https://sokkoxzmwynpxhapkiaw.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNva2tveHptd3lucHhoYXBraWF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNzI2MDMsImV4cCI6MjEwMzc0ODYwM30.S6KyPYwz608yS5wYrWQuVzdxNlYEvSIcBIW2C0lmvWY";
+/* E-mail do usuário único compartilhado criado em Supabase Authentication.
+   Não precisa ser um e-mail real — é só um identificador interno; quem
+   acessa o dashboard só digita a SENHA na tela de login. */
+const SUPABASE_LOGIN_EMAIL = "btg.team@vilt-group.com";
+const SUPABASE_READY = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+const sb = SUPABASE_READY ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-let fbAuth=null, fbDocRef=null, _fbCache={}, _fbUnsub=null, _fbBooted=false;
+let _fbCache={};
 
 /* ═══ STORAGE ═══
    Todas as chaves usam o prefixo "btg_" para garantir que este dashboard
    (BTG) NUNCA compartilhe ou sobrescreva dados com o dashboard do projeto
-   FTD (ou qualquer outro) — nem no localStorage local, nem no Firestore
+   FTD (ou qualquer outro) — nem no localStorage local, nem no Supabase
    (cada dashboard clonado deste template deve apontar para o SEU PRÓPRIO
-   projeto Firebase; nunca reutilize o mesmo projeto/config em dois
-   dashboards de programas diferentes). */
+   projeto Supabase; nunca reutilize o mesmo projeto em dois dashboards de
+   programas diferentes). */
 const ST={
   get(k,d){
-    if (FIREBASE_READY) { const v=_fbCache[k]; return (v!==undefined&&v!==null)?v:d; }
+    if (SUPABASE_READY) { const v=_fbCache[k]; return (v!==undefined&&v!==null)?v:d; }
     try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}
   },
   set(k,v){
-    if (FIREBASE_READY) {
+    if (SUPABASE_READY) {
       _fbCache[k]=v;
-      if (fbDocRef) fbDocRef.set({[k]:v},{merge:true}).catch(e=>console.error('Firestore save falhou:',e));
+      sb.from('kv_store').upsert({key:k,value:v,updated_at:new Date().toISOString()})
+        .then(({error})=>{ if(error) console.error('Supabase save falhou:',error); });
       return;
     }
     try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}
@@ -1107,7 +1099,7 @@ const ST={
 };
 function fmtDate(d) { if(!d) return '—'; try{const [y,m,dd]=d.split('-');return `${dd}/${m}/${y}`;}catch(e){return d;} }
 
-/* ── Firebase: autenticação (senha única compartilhada) + sincronização ── */
+/* ── Supabase: autenticação (senha única compartilhada) + carga inicial ── */
 function fbShowLock(err){
   const el=document.getElementById('fb-lock'); if(el) el.classList.remove('hidden');
   const errEl=document.getElementById('fb-lock-err'); if(errEl) errEl.textContent = err||'';
@@ -1120,47 +1112,26 @@ async function fbDoLogin(){
   const btn=document.getElementById('fb-lock-btn');
   if(!pass){ fbShowLock('Digite a senha.'); return; }
   btn.disabled=true;
-  try{
-    await fbAuth.signInWithEmailAndPassword(FIREBASE_LOGIN_EMAIL, pass);
-  }catch(e){
-    fbShowLock('Senha incorreta. Tente novamente.');
-  }
+  const {error} = await sb.auth.signInWithPassword({email:SUPABASE_LOGIN_EMAIL, password:pass});
   btn.disabled=false;
-}
-function fbRebuildAll(){
-  /* refaz as variáveis "vivas" a partir do cache mais recente e redesenha
-     tudo — chamado quando OUTRA pessoa salva uma mudança */
-  EPICS = ST.get('btg_epics_data', null) || JSON.parse(JSON.stringify(EPICS_DEF));
-  incrItems = ST.get('btg_dcm_incr', null) || [...INCR_DEFAULT];
-  peState = ST.get('btg_pe_state', null) || PE_COLS.map(()=>PE_TASKS_DEF.map(n=>({name:n,status:'pendente'})));
-  PE_COLS_STATE = ST.get('btg_pe_cols_extra', []);
-  buildAllSquads(); buildAllMetaExtra(); restoreDashHeader();
-  buildStatusExec(); buildDashboard(); buildBoard(); buildGantt(); buildPE();
+  if(error){ fbShowLock('Senha incorreta. Tente novamente.'); return; }
+  await fbStartSync();
 }
 async function fbStartSync(){
-  if(_fbBooted) return; /* evita rodar boot() duas vezes se onAuthStateChanged disparar de novo */
-  _fbBooted=true;
   try{
-    const snap = await fbDocRef.get();
-    _fbCache = snap.exists ? (snap.data()||{}) : {};
-  }catch(e){ console.error('Falha ao carregar dados do Firestore:', e); _fbCache={}; }
+    const {data,error} = await sb.from('kv_store').select('key,value');
+    if(error) throw error;
+    _fbCache = {};
+    (data||[]).forEach(row=>{ _fbCache[row.key]=row.value; });
+  }catch(e){ console.error('Falha ao carregar dados do Supabase:', e); _fbCache={}; }
+  fbHideLock();
   boot();
-  _fbUnsub = fbDocRef.onSnapshot(s=>{
-    if(!s.exists) return;
-    _fbCache = s.data()||{};
-    fbRebuildAll();
-  }, e=>console.error('Firestore onSnapshot falhou:', e));
 }
-function fbInit(){
-  firebase.initializeApp(firebaseConfig);
-  fbAuth = firebase.auth();
-  fbDocRef = firebase.firestore().collection('btg_dashboard').doc('state');
+async function fbInit(){
   document.getElementById('fb-lock-btn').addEventListener('click', fbDoLogin);
   document.getElementById('fb-lock-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') fbDoLogin(); });
-  fbAuth.onAuthStateChanged(user=>{
-    if(user){ fbHideLock(); fbStartSync(); }
-    else { fbShowLock(); }
-  });
+  const {data:{session}} = await sb.auth.getSession();
+  if(session){ await fbStartSync(); } else { fbShowLock(); }
 }
 
 
@@ -2398,10 +2369,10 @@ function _applySquadCollapse(collapse,save) {
 }
 
 /* ═══ INIT ═══
-   Modo local (Firebase não configurado): renderiza tudo imediatamente,
+   Modo local (Supabase não configurado): renderiza tudo imediatamente,
    como sempre funcionou, usando localStorage.
-   Modo Firebase (FIREBASE_READY): a tela de login fica visível até o
-   usuário autenticar; só então os dados são carregados do Firestore e o
+   Modo Supabase (SUPABASE_READY): a tela de login fica visível até o
+   usuário autenticar; só então os dados são carregados do banco e o
    dashboard é montado — evita mostrar dados de ninguém antes do login. */
 function boot(){
   const d=new Date(),months=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -2416,7 +2387,7 @@ function boot(){
   buildGantt();
   wireAutoGrowTextareas();
 }
-if (FIREBASE_READY) { fbInit(); } else { boot(); }
+if (SUPABASE_READY) { fbInit(); } else { boot(); }
 </script>
 </body>
 </html>
