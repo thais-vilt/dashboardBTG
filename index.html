@@ -378,11 +378,17 @@ main { padding:28px 36px 64px; max-width:1240px; margin:0 auto; }
 .dash-status-bar { display:none; } /* replaced by header strip */
 
 /* ══ EPICS BOARD ══ */
-.epic-wrap { margin-bottom:14px; }
+.epic-wrap { margin-bottom:14px; transition:opacity .15s; }
+.epic-wrap.dragging { opacity:.4; }
+.epic-wrap.drag-over { box-shadow:0 -3px 0 0 var(--gold); border-radius:var(--r); }
 .epic-card { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r); overflow:hidden; transition:box-shadow .15s; }
 .epic-card:hover { box-shadow:0 6px 28px rgba(0,82,204,0.18); }
-.epic-top { display:grid; grid-template-columns:auto 1fr auto auto auto auto auto; align-items:center; gap:12px; padding:14px 20px; cursor:pointer; user-select:none; transition:background .1s; }
+.epic-top { display:grid; grid-template-columns:auto auto 1fr auto auto auto auto auto; align-items:center; gap:12px; padding:14px 20px; cursor:pointer; user-select:none; transition:background .1s; }
 .epic-top:hover { background:var(--surface2); }
+.epic-drag-handle { display:flex; align-items:center; justify-content:center; width:16px; height:16px; color:var(--text3); cursor:grab; flex-shrink:0; }
+.epic-drag-handle:hover { color:var(--gold); }
+.epic-drag-handle svg { width:14px; height:14px; }
+.epic-wrap.dragging .epic-drag-handle { cursor:grabbing; }
 .epic-dot { width:13px; height:13px; border-radius:4px; flex-shrink:0; }
 .epic-title-inp { font-weight:700; font-size:14px; color:var(--text); background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:2px 6px; outline:none; min-width:80px; max-width:260px; transition:border-color .15s,background .15s; letter-spacing:-.01em; }
 .epic-title-inp:focus { border-color:var(--btg-lt); background:var(--surface2); }
@@ -401,14 +407,23 @@ main { padding:28px 36px 64px; max-width:1240px; margin:0 auto; }
 .ns-icon { width:15px; height:15px; stroke:var(--gold); fill:none; flex-shrink:0; margin-top:1px; stroke-width:1.8; }
 .ns-textarea { flex:1; font-size:12px; color:var(--text2); background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:2px 6px; outline:none; resize:none; min-height:32px; line-height:1.5; font-family:var(--font); transition:border-color .15s,background .15s; }
 .ns-textarea:focus { border-color:var(--btg-lt); background:var(--surface2); color:var(--text); }
-.subepic-header { display:flex; align-items:center; gap:8px; padding:8px 20px 7px; border-bottom:1px solid var(--border); background:var(--btg-xlt); }
+.subepic-header { display:flex; align-items:center; gap:8px; padding:8px 20px 7px 34px; border-bottom:1px solid var(--border); background:var(--btg-xlt); position:relative; }
+.subepic-header::before { content:''; position:absolute; left:20px; top:0; bottom:0; width:2px; background:var(--btg-lt); opacity:.5; }
+.subepic-header::after { content:''; position:absolute; left:20px; top:50%; width:10px; height:2px; background:var(--btg-lt); opacity:.5; }
 .subepic-label { font-size:10px; font-weight:700; color:var(--btg-lt); text-transform:uppercase; letter-spacing:.06em; }
+.subepic-parent { font-size:9px; font-weight:600; color:var(--text3); text-transform:none; letter-spacing:.02em; }
 .subepic-pct { font-size:10px; font-weight:600; color:var(--text3); margin-left:auto; }
-.tasks-header { display:grid; grid-template-columns:1fr 70px 96px 96px 130px 110px 180px 24px; padding:7px 20px; gap:8px; border-bottom:1px solid var(--border); background:var(--surface2); }
+.tasks-header { display:grid; grid-template-columns:20px 1fr 70px 96px 96px 130px 110px 180px 24px; padding:7px 20px; gap:8px; border-bottom:1px solid var(--border); background:var(--surface2); }
 .tasks-header span { font-size:9px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.07em; }
-.task-row { display:grid; grid-template-columns:1fr 70px 96px 96px 130px 110px 180px 24px; align-items:center; padding:7px 20px; gap:8px; border-bottom:1px solid var(--border); transition:background .1s; }
+.task-row { display:grid; grid-template-columns:20px 1fr 70px 96px 96px 130px 110px 180px 24px; align-items:center; padding:7px 20px; gap:8px; border-bottom:1px solid var(--border); transition:background .1s,opacity .15s; }
 .task-row:last-child { border-bottom:none; }
 .task-row:hover { background:var(--surface2); }
+.task-row.dragging { opacity:.4; }
+.task-row.drag-over { box-shadow:0 -2px 0 0 var(--gold); }
+.task-drag-handle { display:flex; align-items:center; justify-content:center; width:16px; height:16px; color:var(--text3); cursor:grab; flex-shrink:0; }
+.task-drag-handle:hover { color:var(--gold); }
+.task-drag-handle svg { width:12px; height:12px; }
+.task-row.dragging .task-drag-handle { cursor:grabbing; }
 .task-inp { font-size:13px; color:var(--text); background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:3px 7px; width:100%; outline:none; transition:border-color .15s,background .15s; }
 .task-inp:focus { border-color:var(--btg-lt); background:var(--surface2); }
 .comment-inp { font-size:12px; color:var(--text2); background:var(--surface2); border:1px solid var(--border2); border-radius:var(--r-xs); padding:4px 7px; width:100%; outline:none; transition:border-color .15s,background .15s; }
@@ -569,7 +584,8 @@ footer { text-align:center; padding:22px 36px; font-size:11px; color:var(--text3
   .dash-kpis,.se-grid { grid-template-columns:1fr 1fr; } .dash-row { grid-template-columns:1fr; }
   .squad-members { grid-template-columns:1fr 1fr; }
   .epic-top { grid-template-columns:auto 1fr auto; }
-  .meta-block:nth-child(4),.meta-block:nth-child(5) { display:none; }
+  .meta-block:nth-child(5),.meta-block:nth-child(6) { display:none; }
+  .epic-drag-handle,.task-drag-handle { display:none; }
   .tasks-header,.task-row { grid-template-columns:1fr 130px 24px; }
   .weight-inp,.date-inp,.comment-inp { display:none; }
   .rm-scope-grid { grid-template-columns:1fr; }
@@ -1574,6 +1590,12 @@ function epicDateRange(epic) {
   return { s: starts[0]||'', e: ends[ends.length-1]||'' };
 }
 /* ═══ BOARD (Épicos) ═══ */
+let draggedEpicWrap=null;
+let draggedTaskRow=null, draggedTaskTc=null;
+/* mantém aberto/fechado de cada card entre reconstruções (a aba é
+   reconstruída a cada ação/save — sem isso, cada rebuild reabriria
+   todos os cards). */
+const boardCardExp={};
 function buildBoard(){
   const cont=document.getElementById('board-container'); cont.innerHTML='';
 
@@ -1582,11 +1604,15 @@ function buildBoard(){
     const prog=wProg(allTasks(epic));
     const dr=epicDateRange(epic);
     const wrap=document.createElement('div'); wrap.className='epic-wrap';
-    const card=document.createElement('div'); card.className='epic-card open';
+    const isOpen = boardCardExp[epic.id] !== false; /* aberto por padrão */
+    const card=document.createElement('div'); card.className='epic-card'+(isOpen?' open':'');
 
     /* ── epic top bar ── */
     const top=document.createElement('div'); top.className='epic-top';
     /* build top contents imperatively so title input doesn't trigger toggle */
+    const dragHandle=document.createElement('span'); dragHandle.className='epic-drag-handle'; dragHandle.title='Arraste para reordenar';
+    dragHandle.innerHTML='<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="3" r="1.3"/><circle cx="11" cy="3" r="1.3"/><circle cx="5" cy="8" r="1.3"/><circle cx="11" cy="8" r="1.3"/><circle cx="5" cy="13" r="1.3"/><circle cx="11" cy="13" r="1.3"/></svg>';
+    dragHandle.addEventListener('click',e=>e.stopPropagation());
     const dotSpan=document.createElement('span'); dotSpan.className='epic-dot'; dotSpan.style.background=color;
     /* editable title */
     const titleInp=document.createElement('input'); titleInp.className='epic-title-inp';
@@ -1615,8 +1641,40 @@ function buildBoard(){
     });
     /* chevron */
     const chev=document.createElement('svg'); chev.setAttribute('class','chevron'); chev.setAttribute('viewBox','0 0 16 16'); chev.setAttribute('fill','none'); chev.setAttribute('stroke','currentColor'); chev.setAttribute('stroke-width','1.5'); chev.innerHTML='<polyline points="4,6 8,10 12,6"/>';
-    top.append(dotSpan,titleInp,mStatus,mDates,mProg,delEpicBtn,chev);
-    top.addEventListener('click',()=>card.classList.toggle('open'));
+    top.append(dragHandle,dotSpan,titleInp,mStatus,mDates,mProg,delEpicBtn,chev);
+    top.addEventListener('click',()=>{ boardCardExp[epic.id]=card.classList.toggle('open'); });
+
+    /* ── arrastar para reordenar os épicos ── */
+    wrap.draggable=true;
+    wrap.addEventListener('dragstart',e=>{
+      draggedEpicWrap=wrap;
+      wrap.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+      try{ e.dataTransfer.setData('text/plain',''); }catch(err){}
+    });
+    wrap.addEventListener('dragend',()=>{
+      wrap.classList.remove('dragging');
+      draggedEpicWrap=null;
+      cont.querySelectorAll('.epic-wrap.drag-over').forEach(el=>el.classList.remove('drag-over'));
+    });
+    wrap.addEventListener('dragover',e=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      if(draggedEpicWrap && draggedEpicWrap!==wrap) wrap.classList.add('drag-over');
+    });
+    wrap.addEventListener('dragleave',()=>wrap.classList.remove('drag-over'));
+    wrap.addEventListener('drop',e=>{
+      e.preventDefault();
+      wrap.classList.remove('drag-over');
+      if(!draggedEpicWrap || draggedEpicWrap===wrap) return;
+      const fromIdx=Array.from(cont.children).indexOf(draggedEpicWrap);
+      const toIdx=Array.from(cont.children).indexOf(wrap);
+      if(fromIdx<0||toIdx<0) return;
+      const [moved]=EPICS.splice(fromIdx,1);
+      EPICS.splice(toIdx,0,moved);
+      ST.set('btg_epics_data',EPICS);
+      buildBoard(); buildGantt(); buildStatusExec(); buildDashboard();
+    });
 
     const body=document.createElement('div'); body.className='epic-body';
 
@@ -1636,19 +1694,24 @@ function buildBoard(){
         const gp=wProg(g.tasks);
         const gh=document.createElement('div'); gh.className='subepic-header';
         gh.innerHTML=`<svg style="width:12px;height:12px;stroke:var(--btg);fill:none;flex-shrink:0;" viewBox="0 0 16 16" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/></svg>
-          <span class="subepic-label">${g.label}</span><span class="subepic-pct" id="sgpct-${ei}-${gi}">${gp}% ponderado</span>`;
+          <span class="subepic-label">${g.label}</span><span class="subepic-parent">parte de: ${epic.name}</span><span class="subepic-pct" id="sgpct-${ei}-${gi}">${gp}% ponderado</span>`;
         body.appendChild(gh);
       }
 
       /* tasks header */
       const th=document.createElement('div'); th.className='tasks-header';
-      th.innerHTML='<span>Tarefa</span><span>Peso</span><span>Início</span><span>Fim</span><span>Status</span><span>Progresso</span><span>Comentários</span><span></span>';
+      th.innerHTML='<span></span><span>Tarefa</span><span>Peso</span><span>Início</span><span>Fim</span><span>Status</span><span>Progresso</span><span>Comentários</span><span></span>';
       body.appendChild(th);
 
       const tc=document.createElement('div'); tc.id=`tc-${ei}-${gi}`;
 
       function mkTaskRow(t,ti){
         const row=document.createElement('div'); row.className='task-row';
+
+        /* drag handle */
+        const dragH=document.createElement('span'); dragH.className='task-drag-handle'; dragH.title='Arraste para reordenar';
+        dragH.innerHTML='<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="3" r="1.3"/><circle cx="11" cy="3" r="1.3"/><circle cx="5" cy="8" r="1.3"/><circle cx="11" cy="8" r="1.3"/><circle cx="5" cy="13" r="1.3"/><circle cx="11" cy="13" r="1.3"/></svg>';
+        dragH.addEventListener('click',e=>e.stopPropagation());
 
         /* name */
         const ni=document.createElement('input'); ni.className='task-inp'; ni.value=t.name;
@@ -1697,7 +1760,43 @@ function buildBoard(){
         const db=document.createElement('button'); db.className='del-btn'; db.textContent='×';
         db.addEventListener('click',e=>{e.stopPropagation();g.tasks.splice(ti,1);tc.innerHTML='';g.tasks.forEach((tt,tti)=>tc.appendChild(mkTaskRow(tt,tti)));refreshEpicBar(ei,gi);buildGantt();});
 
-        row.append(ni,ww,ds,de,sw,pw,ci,db);
+        row.append(dragH,ni,ww,ds,de,sw,pw,ci,db);
+
+        /* ── arrastar para reordenar dentro do mesmo grupo ── */
+        row.draggable=true;
+        row.addEventListener('dragstart',e=>{
+          e.stopPropagation();
+          draggedTaskRow=row; draggedTaskTc=tc;
+          row.classList.add('dragging');
+          e.dataTransfer.effectAllowed='move';
+          try{ e.dataTransfer.setData('text/plain',''); }catch(err){}
+        });
+        row.addEventListener('dragend',e=>{
+          e.stopPropagation();
+          row.classList.remove('dragging');
+          draggedTaskRow=null; draggedTaskTc=null;
+          tc.querySelectorAll('.task-row.drag-over').forEach(el=>el.classList.remove('drag-over'));
+        });
+        row.addEventListener('dragover',e=>{
+          e.preventDefault(); e.stopPropagation();
+          if(draggedTaskRow && draggedTaskRow!==row && draggedTaskTc===tc){
+            e.dataTransfer.dropEffect='move';
+            row.classList.add('drag-over');
+          }
+        });
+        row.addEventListener('dragleave',e=>{ e.stopPropagation(); row.classList.remove('drag-over'); });
+        row.addEventListener('drop',e=>{
+          e.preventDefault(); e.stopPropagation();
+          row.classList.remove('drag-over');
+          if(!draggedTaskRow || draggedTaskRow===row || draggedTaskTc!==tc) return;
+          const fromIdx=Array.from(tc.children).indexOf(draggedTaskRow);
+          const toIdx=Array.from(tc.children).indexOf(row);
+          if(fromIdx<0||toIdx<0) return;
+          const [moved]=g.tasks.splice(fromIdx,1);
+          g.tasks.splice(toIdx,0,moved);
+          tc.innerHTML=''; g.tasks.forEach((tt,tti)=>tc.appendChild(mkTaskRow(tt,tti)));
+        });
+
         return row;
       }
 
