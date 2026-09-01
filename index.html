@@ -410,9 +410,14 @@ main { padding:28px 36px 64px; max-width:1240px; margin:0 auto; }
 .subepic-header { display:flex; align-items:center; gap:8px; padding:8px 20px 7px 34px; border-bottom:1px solid var(--border); background:var(--btg-xlt); position:relative; }
 .subepic-header::before { content:''; position:absolute; left:20px; top:0; bottom:0; width:2px; background:var(--btg-lt); opacity:.5; }
 .subepic-header::after { content:''; position:absolute; left:20px; top:50%; width:10px; height:2px; background:var(--btg-lt); opacity:.5; }
+.subepic-header:hover { background:var(--btg-xlt2,var(--btg-xlt)); filter:brightness(1.05); }
 .subepic-label { font-size:10px; font-weight:700; color:var(--btg-lt); text-transform:uppercase; letter-spacing:.06em; }
 .subepic-parent { font-size:9px; font-weight:600; color:var(--text3); text-transform:none; letter-spacing:.02em; }
 .subepic-pct { font-size:10px; font-weight:600; color:var(--text3); margin-left:auto; }
+.subepic-chevron { width:13px; height:13px; flex-shrink:0; color:var(--text3); transition:transform .2s; }
+.subepic-chevron.open { transform:rotate(180deg); }
+.subepic-body { display:none; }
+.subepic-body:not(.collapsed) { display:block; }
 .tasks-header { display:grid; grid-template-columns:20px 1fr 70px 96px 96px 130px 110px 180px 24px; padding:7px 20px; gap:8px; border-bottom:1px solid var(--border); background:var(--surface2); }
 .tasks-header span { font-size:9px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.07em; }
 .task-row { display:grid; grid-template-columns:20px 1fr 70px 96px 96px 130px 110px 180px 24px; align-items:center; padding:7px 20px; gap:8px; border-bottom:1px solid var(--border); transition:background .1s,opacity .15s; }
@@ -1596,6 +1601,10 @@ let draggedTaskRow=null, draggedTaskTc=null;
    reconstruída a cada ação/save — sem isso, cada rebuild reabriria
    todos os cards). */
 const boardCardExp={};
+/* mantém aberto/fechado de cada subgrupo (ex: "Gen Studio" dentro de
+   Implementação) entre reconstruções — mesma lógica do boardCardExp,
+   mas por grupo em vez de por épico inteiro. */
+const boardGroupExp={};
 function buildBoard(){
   const cont=document.getElementById('board-container'); cont.innerHTML='';
 
@@ -1690,18 +1699,29 @@ function buildBoard(){
     body.appendChild(nsRow);
 
     epic.groups.forEach((g,gi)=>{
+      const groupKey=`${epic.id}::${gi}`;
+      const groupBody=document.createElement('div');
       if(g.label){
         const gp=wProg(g.tasks);
-        const gh=document.createElement('div'); gh.className='subepic-header';
+        const groupOpen = boardGroupExp[groupKey] !== false; /* aberto por padrão */
+        const gh=document.createElement('div'); gh.className='subepic-header'; gh.style.cursor='pointer'; gh.style.userSelect='none';
         gh.innerHTML=`<svg style="width:12px;height:12px;stroke:var(--btg);fill:none;flex-shrink:0;" viewBox="0 0 16 16" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/></svg>
-          <span class="subepic-label">${g.label}</span><span class="subepic-parent">parte de: ${epic.name}</span><span class="subepic-pct" id="sgpct-${ei}-${gi}">${gp}% ponderado</span>`;
+          <span class="subepic-label">${g.label}</span><span class="subepic-parent">parte de: ${epic.name}</span><span class="subepic-pct" id="sgpct-${ei}-${gi}">${gp}% ponderado</span>
+          <svg class="subepic-chevron${groupOpen?' open':''}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="4,6 8,10 12,6"/></svg>`;
+        gh.addEventListener('click',()=>{
+          const nowOpen=groupBody.classList.toggle('collapsed')===false;
+          boardGroupExp[groupKey]=nowOpen;
+          gh.querySelector('.subepic-chevron').classList.toggle('open',nowOpen);
+        });
         body.appendChild(gh);
+        groupBody.className='subepic-body'+(groupOpen?'':' collapsed');
       }
+      body.appendChild(groupBody);
 
       /* tasks header */
       const th=document.createElement('div'); th.className='tasks-header';
       th.innerHTML='<span></span><span>Tarefa</span><span>Peso</span><span>Início</span><span>Fim</span><span>Status</span><span>Progresso</span><span>Comentários</span><span></span>';
-      body.appendChild(th);
+      groupBody.appendChild(th);
 
       const tc=document.createElement('div'); tc.id=`tc-${ei}-${gi}`;
 
@@ -1801,7 +1821,7 @@ function buildBoard(){
       }
 
       g.tasks.forEach((t,ti)=>tc.appendChild(mkTaskRow(t,ti)));
-      body.appendChild(tc);
+      groupBody.appendChild(tc);
 
       /* add task btn */
       const ab=document.createElement('button'); ab.className='btn-add-task';
@@ -1811,7 +1831,7 @@ function buildBoard(){
         const nt={name:'Nova tarefa',progress:0,status:'pendente',weight:0.10,w:[1,4],dateStart:'',dateEnd:'',comment:''};
         g.tasks.push(nt); tc.appendChild(mkTaskRow(nt,g.tasks.length-1)); refreshEpicBar(ei,gi);
       });
-      body.appendChild(ab);
+      groupBody.appendChild(ab);
     });
 
     /* ── footer: save ── */
