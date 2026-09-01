@@ -434,6 +434,27 @@ main { padding:28px 36px 64px; max-width:1240px; margin:0 auto; }
 .comment-inp { font-size:12px; color:var(--text2); background:var(--surface2); border:1px solid var(--border2); border-radius:var(--r-xs); padding:4px 7px; width:100%; outline:none; transition:border-color .15s,background .15s; }
 .comment-inp:focus { border-color:var(--btg-lt); background:var(--surface3); }
 .comment-inp::placeholder { color:var(--text3); }
+
+/* ═══ Riscos e Dependências — tabela editável ═══ */
+.rdt-card { margin-top:20px; }
+.rdt-table-wrap { overflow-x:auto; }
+.rdt-head { display:grid; grid-template-columns:126px 1.4fr 1.4fr 108px 128px 130px 34px; gap:10px; padding:0 10px 8px; font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid var(--border); margin-bottom:8px; min-width:920px; }
+.rdt-row { display:grid; grid-template-columns:126px 1.4fr 1.4fr 108px 128px 130px 34px; gap:10px; align-items:start; padding:9px 10px; border-radius:var(--r-sm); background:var(--surface2); margin-bottom:8px; min-width:920px; }
+.rdt-type-select { font-size:10px; font-weight:800; letter-spacing:.04em; border:none; border-radius:5px; padding:5px 6px; outline:none; cursor:pointer; text-align:center; }
+.rdt-type-risco { background:#4A1A22; color:#FF8A93; }
+.rdt-type-dependencia { background:#4A3A10; color:#FFD27A; }
+.rdt-ta { width:100%; font-size:12px; color:var(--text2); background:var(--surface3); border:1px solid var(--border2); border-radius:var(--r-xs); padding:6px 8px; outline:none; resize:none; overflow:hidden; min-height:32px; line-height:1.5; font-family:var(--font); transition:border-color .15s; }
+.rdt-ta:focus { border-color:var(--gold); }
+.rdt-date-inp, .rdt-text-inp { width:100%; font-size:12px; color:var(--text2); background:var(--surface3); border:1px solid var(--border2); border-radius:var(--r-xs); padding:6px 8px; outline:none; font-family:var(--font); transition:border-color .15s; color-scheme:dark; }
+.rdt-date-inp:focus, .rdt-text-inp:focus { border-color:var(--gold); }
+.rdt-status-select { font-size:11px; font-weight:700; border:none; border-radius:6px; padding:6px 8px; outline:none; cursor:pointer; width:100%; }
+.rdt-status-atraso     { background:var(--s-blok-bg); color:var(--s-blok-tx); }
+.rdt-status-andamento  { background:var(--s-prog-bg); color:var(--s-prog-tx); }
+.rdt-status-concluido  { background:var(--s-done-bg); color:var(--s-done-tx); }
+.rdt-status-pendente   { background:var(--s-pend-bg); color:var(--s-pend-tx); }
+.btn-del-rdt { width:28px; height:28px; border-radius:6px; border:none; background:transparent; color:var(--text3); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s,color .15s; margin-top:2px; }
+.btn-del-rdt:hover { background:var(--s-blok-bg); color:var(--s-blok-tx); }
+.btn-del-rdt svg { width:13px; height:13px; }
 .weight-inp { font-size:12px; color:var(--text3); text-align:right; background:transparent; border:1px solid transparent; border-radius:var(--r-xs); padding:3px 7px; width:100%; outline:none; transition:border-color .15s,background .15s; }
 .weight-inp:focus { border-color:var(--btg-lt); background:var(--surface2); }
 .date-inp { font-size:11px; color:var(--text2); background:var(--surface2); border:1px solid var(--border2); border-radius:var(--r-xs); padding:4px 5px; outline:none; width:100%; transition:border-color .15s,background .15s; cursor:pointer; color-scheme:dark; }
@@ -851,25 +872,38 @@ Pendente: alinhamento de escopo financeiro Fase II.</textarea>
       </div>
     </div>
 
-    <!-- ── Row 4: Riscos & Alertas + Decisões ── -->
-    <div class="se-row2" style="margin-bottom:0;">
-      <div class="se-card">
-        <div class="se-card-header"><span class="se-card-title">Riscos &amp; Alertas</span></div>
-        <textarea class="se-textarea" id="se-risks" placeholder="Riscos, bloqueios e pontos de atenção...">⚠️ Treinamentos: materiais pendentes (0%).
-⚠️ ISA: arquitetura de integração não iniciada.
-🔴 Migração Vulcano: script em fase inicial (10%).
-✅ Licenciamentos: core em Sandbox configurado.</textarea>
-        <div class="se-text-save-row">
-          <span class="saved-note" id="risk-saved-note">✓ Salvo</span>
-          <button class="btn-save-block" onclick="saveTextBlock('se-risks','btg_dcm_risks_se','risk-saved-note')">Salvar</button>
-        </div>
-      </div>
+    <!-- ── Row 4: Decisões ── -->
+    <div style="margin-bottom:16px;">
       <div class="se-card">
         <div class="se-card-header"><span class="se-card-title">Decisões</span></div>
         <textarea class="se-textarea" id="se-decisions" placeholder="Decisões tomadas..."></textarea>
         <div class="se-text-save-row">
           <span class="saved-note" id="se-decisions-note">✓ Salvo</span>
           <button class="btn-save-block" onclick="saveTextBlock('se-decisions','btg_dcm_decisions_se','se-decisions-note')">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Riscos e Dependências — cópia sincronizada com a do Dashboard de
+         Programa (mesmo array rdtRows; edição em qualquer uma das duas
+         reflete na outra) ── -->
+    <div class="se-card" style="margin-bottom:0;">
+      <div class="se-card-header"><span class="se-card-title">Riscos e Dependências</span></div>
+      <p style="font-size:11px;color:var(--text3);margin-top:-6px;margin-bottom:14px;">Edite as linhas livremente e clique em Salvar para gravar as alterações.</p>
+      <div class="rdt-table-wrap">
+        <div class="rdt-head">
+          <div>Tipo</div><div>Risco ou Dependência</div><div>Ação</div><div>Data</div><div>Responsável</div><div>Status</div><div></div>
+        </div>
+        <div id="rdt-rows-se"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;margin-top:4px;border-top:1px solid var(--border);">
+        <button class="btn-add-incr" onclick="addRdtRow()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+          Adicionar linha
+        </button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="saved-note" id="rdt-saved-note-se">✓ Salvo</span>
+          <button class="btn-save-epic" onclick="saveRdtTable()">Salvar</button>
         </div>
       </div>
     </div>
@@ -989,26 +1023,6 @@ Pendente: alinhamento de escopo financeiro Fase II.</textarea>
       </div>
     </div>
 
-    <!-- Dependências + Riscos & Alertas -->
-    <div class="se-row2" style="margin-bottom:16px;">
-      <div class="se-card">
-        <div class="se-card-header"><span class="se-card-title">Dependências</span></div>
-        <textarea class="se-textarea" id="dash-dependencies" placeholder="Descreva as dependências..."></textarea>
-        <div class="se-text-save-row">
-          <span class="saved-note" id="dash-dep-note">✓ Salvo</span>
-          <button class="btn-save-block" onclick="saveTextBlock('dash-dependencies','btg_dcm_dependencies','dash-dep-note')">Salvar</button>
-        </div>
-      </div>
-      <div class="se-card">
-        <div class="se-card-header"><span class="se-card-title">Riscos &amp; Alertas</span></div>
-        <textarea class="se-textarea" id="dash-risks" placeholder="Riscos e alertas..." style="min-height:80px;"></textarea>
-        <div class="se-text-save-row">
-          <span class="saved-note" id="dash-risk-note">✓ Salvo</span>
-          <button class="btn-save-block" onclick="saveTextBlock('dash-risks','btg_dcm_risks_dash','dash-risk-note')">Salvar</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Decisões -->
     <div style="margin-bottom:16px;">
       <div class="se-card">
@@ -1017,6 +1031,28 @@ Pendente: alinhamento de escopo financeiro Fase II.</textarea>
         <div class="se-text-save-row">
           <span class="saved-note" id="dash-decisions-note">✓ Salvo</span>
           <button class="btn-save-block" onclick="saveTextBlock('dash-decisions','btg_dcm_decisions_dash','dash-decisions-note')">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Riscos e Dependências — tabela editável, abaixo de Decisões ── -->
+    <div class="dash-card rdt-card" style="margin-bottom:16px;">
+      <div class="dash-card-title" style="margin-bottom:4px;">Riscos e Dependências</div>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:16px;">Edite as linhas livremente e clique em Salvar para gravar as alterações.</p>
+      <div class="rdt-table-wrap">
+        <div class="rdt-head">
+          <div>Tipo</div><div>Risco ou Dependência</div><div>Ação</div><div>Data</div><div>Responsável</div><div>Status</div><div></div>
+        </div>
+        <div id="rdt-rows"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;margin-top:4px;border-top:1px solid var(--border);">
+        <button class="btn-add-incr" onclick="addRdtRow()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+          Adicionar linha
+        </button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="saved-note" id="rdt-saved-note">✓ Salvo</span>
+          <button class="btn-save-epic" onclick="saveRdtTable()">Salvar</button>
         </div>
       </div>
     </div>
@@ -1194,6 +1230,7 @@ async function fbStartSync(){
   incrItems = ST.get('btg_dcm_incr', null) || [...INCR_DEFAULT];
   peState = ST.get('btg_pe_state', null) || PE_COLS.map(()=>PE_TASKS_DEF.map(n=>({name:n,status:'pendente'})));
   PE_COLS_STATE = ST.get('btg_pe_cols_extra', []);
+  rdtRows = ST.get('btg_risks_deps_table', null) || JSON.parse(JSON.stringify(RDT_DEFAULT));
   await loadUserRole();
   fbHideLock();
   boot();
@@ -1957,16 +1994,92 @@ function restoreSharedBlocks() {
   const fields = [
     ['se-next-steps',   'btg_dcm_next_steps_se'],
     ['dash-next-steps', 'btg_dcm_next_steps_dash'],
-    ['se-risks',        'btg_dcm_risks_se'],
-    ['dash-risks',      'btg_dcm_risks_dash'],
     ['se-decisions',    'btg_dcm_decisions_se'],
     ['dash-decisions',  'btg_dcm_decisions_dash'],
-    ['dash-dependencies','btg_dcm_dependencies'],
     ['dash-updates',    'btg_dcm_updates'],
   ];
   fields.forEach(([id, key])=>{
     const val = ST.get(key, null);
     if (val !== null) { const e=document.getElementById(id); if(e) e.value=val; }
+  });
+}
+
+/* ═══ RISCOS E DEPENDÊNCIAS — tabela editável (mesma da aba FTD) ═══
+   Substitui os antigos blocos de texto livre "Riscos & Alertas" e
+   "Dependências" (Status Executivo e Dashboard de Programa) por uma única
+   tabela estruturada, compartilhada entre as duas abas (mesmo array
+   rdtRows — editar em uma reflete na outra). Linhas abaixo migradas do
+   conteúdo que estava em btg_dcm_risks_dash e btg_dcm_dependencies. */
+const RDT_DEFAULT = [
+  { type:'dependencia', desc:'Definição de grupos/perfis de usuários', action:'Indicar stakeholder para definição de grupos/perfis de usuários.', date:'', owner:'', status:'pendente' },
+  { type:'dependencia', desc:'Reunião com My Compliance sobre o desenho do caso de uso', action:'Indicação de data para reunião com My Compliance com o desenho explícito do caso de uso, incluindo o stakeholder de IT de Compliance.', date:'', owner:'', status:'pendente' },
+  { type:'dependencia', desc:'Sessão colaborativa Adobe (GenStudio + Fluxo) — recuperar POC', action:'Envolver o líder de mkt e indicar data para a sessão.', date:'', owner:'', status:'pendente' },
+  { type:'dependencia', desc:'Usuário do TL bloqueado', action:'Desbloqueio de usuário do TL para seguir com as tarefas previstas. Yasmin alinhando com o time de infraestrutura BTG.', date:'', owner:'Yasmin', status:'andamento' },
+  { type:'dependencia', desc:'Configuração do admin console (Adobe, BTG)', action:'Fim da configuração do admin console. SSM Adobe servindo como escalation point.', date:'2026-09-02', owner:'', status:'andamento' },
+  { type:'risco', desc:'Alta fricção na primeira sprint — início do desenvolvimento técnico coincidiu com a habilitação das licenças nos sistemas.', action:'Potencial repriorização do backlog após análise dos impactos.', date:'', owner:'', status:'andamento' },
+];
+let rdtRows = JSON.parse(JSON.stringify(RDT_DEFAULT));
+
+function buildRdtRow(r, i) {
+  const row = document.createElement('div'); row.className = 'rdt-row';
+
+  const typeSel = document.createElement('select'); typeSel.className = 'rdt-type-select rdt-type-' + (r.type === 'risco' ? 'risco' : 'dependencia');
+  typeSel.innerHTML = '<option value="risco">RISCO</option><option value="dependencia">DEPENDÊNCIA</option>';
+  typeSel.value = r.type === 'risco' ? 'risco' : 'dependencia';
+  typeSel.addEventListener('change', e => { r.type = e.target.value; typeSel.className = 'rdt-type-select rdt-type-' + (r.type === 'risco' ? 'risco' : 'dependencia'); });
+
+  const descTa = document.createElement('textarea'); descTa.className = 'rdt-ta'; descTa.placeholder = 'Descreva o risco ou a dependência…';
+  descTa.value = r.desc || ''; descTa.rows = 1;
+  descTa.addEventListener('input', e => { r.desc = e.target.value; autoGrowTextarea(descTa); });
+
+  const actionTa = document.createElement('textarea'); actionTa.className = 'rdt-ta'; actionTa.placeholder = 'Ação de mitigação / próximo passo…';
+  actionTa.value = r.action || ''; actionTa.rows = 1;
+  actionTa.addEventListener('input', e => { r.action = e.target.value; autoGrowTextarea(actionTa); });
+
+  const dateInp = document.createElement('input'); dateInp.type = 'date'; dateInp.className = 'rdt-date-inp';
+  dateInp.value = r.date || '';
+  dateInp.addEventListener('input', e => { r.date = e.target.value; });
+
+  const ownerInp = document.createElement('input'); ownerInp.type = 'text'; ownerInp.className = 'rdt-text-inp'; ownerInp.placeholder = 'Responsável';
+  ownerInp.value = r.owner || '';
+  ownerInp.addEventListener('input', e => { r.owner = e.target.value; });
+
+  const statusSel = document.createElement('select'); statusSel.className = 'rdt-status-select rdt-status-' + (r.status || 'pendente');
+  statusSel.innerHTML = '<option value="pendente">Pendente</option><option value="andamento">Em andamento</option><option value="atraso">Em atraso</option><option value="concluido">Concluído</option>';
+  statusSel.value = r.status || 'pendente';
+  statusSel.addEventListener('change', e => { r.status = e.target.value; statusSel.className = 'rdt-status-select rdt-status-' + r.status; });
+
+  const delBtn = document.createElement('button'); delBtn.className = 'btn-del-rdt'; delBtn.title = 'Excluir linha';
+  delBtn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="3,4 13,4"/><path d="M5,4V2h6v2"/><path d="M4,4l1,10h6l1-10"/></svg>';
+  delBtn.addEventListener('click', () => { rdtRows.splice(i, 1); buildRdtTable(); });
+
+  row.append(typeSel, descTa, actionTa, dateInp, ownerInp, statusSel, delBtn);
+  return { row, descTa, actionTa };
+}
+/* renderiza a MESMA tabela em todos os lugares em que ela existe no DOM
+   (Dashboard de Programa e Status Executivo) — as duas cópias ficam sempre
+   idênticas, não importa qual aba disparou o rebuild. */
+function buildRdtTable() {
+  ['rdt-rows', 'rdt-rows-se'].forEach(wrapId => {
+    const wrap = document.getElementById(wrapId);
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    rdtRows.forEach((r, i) => {
+      const { row, descTa, actionTa } = buildRdtRow(r, i);
+      wrap.appendChild(row);
+      autoGrowTextarea(descTa); autoGrowTextarea(actionTa);
+    });
+  });
+}
+function addRdtRow() {
+  rdtRows.push({ type: 'risco', desc: '', action: '', date: '', owner: '', status: 'pendente' });
+  buildRdtTable();
+}
+function saveRdtTable() {
+  ST.set('btg_risks_deps_table', rdtRows);
+  ['rdt-saved-note', 'rdt-saved-note-se'].forEach(id => {
+    const n = document.getElementById(id);
+    if (n) { n.classList.add('show'); setTimeout(() => n.classList.remove('show'), 2500); }
   });
 }
 
@@ -2560,6 +2673,7 @@ function boot(){
   buildDashboard();
   buildBoard();
   buildGantt();
+  buildRdtTable();
   wireAutoGrowTextareas();
   applyReadOnlyMode();
 }
