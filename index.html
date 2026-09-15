@@ -1174,17 +1174,19 @@ function applyReadOnlyMode() {
 }
 /* ═══ VISIBILIDADE DE ABAS por papel ═══
    'status_exec' só enxerga a aba Status Executivo (demais abas ficam
-   ocultas). 'editor' e 'viewer' perdem a aba Status Executivo (ela some
-   do menu e, se for a aba ativa no boot, cai automaticamente para
-   Dashboard de Programa). Isso é uma restrição de interface — a leitura
-   dos dados no Supabase continua liberada para qualquer autenticado (ver
-   política de RLS do kv_store); não é um isolamento a nível de dados. */
+   ocultas). 'viewer' perde a aba Status Executivo (ela some do menu e,
+   se for a aba ativa no boot, cai automaticamente para Dashboard de
+   Programa). 'editor' continua vendo e editando todas as abas, incluindo
+   Status Executivo — sem nenhuma restrição. Isso é uma restrição de
+   interface — a leitura dos dados no Supabase continua liberada para
+   qualquer autenticado (ver política de RLS do kv_store); não é um
+   isolamento a nível de dados. */
 function applyTabVisibility() {
   const tabBtns = document.querySelectorAll('.tab-btn');
   if (currentUserRole === 'status_exec') {
     tabBtns.forEach((btn,i) => { btn.style.display = TABS[i]==='status' ? '' : 'none'; });
     if (!document.getElementById('view-status').classList.contains('active')) switchTab('status');
-  } else {
+  } else if (currentUserRole === 'viewer') {
     tabBtns.forEach((btn,i) => { if (TABS[i]==='status') btn.style.display='none'; });
     if (document.getElementById('view-status').classList.contains('active')) switchTab('dashboard');
   }
