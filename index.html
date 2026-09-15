@@ -1138,19 +1138,21 @@ const sb = SUPABASE_READY ? window.supabase.createClient(SUPABASE_URL, SUPABASE_
 
 let _fbCache={};
 
-/* ═══ CONTROLE DE ACESSO — editor vs. visualizador ═══
+/* ═══ CONTROLE DE ACESSO — editor / visualizador / status_exec ═══
    'editor' pode gravar (a política de RLS do kv_store no Supabase também
    exige isso, então mesmo contornando a interface a gravação seria
-   recusada pelo banco). 'viewer' é o padrão "seguro" — se a consulta ao
-   papel falhar por qualquer motivo, a pessoa cai como somente leitura,
-   nunca como editora. */
+   recusada pelo banco). 'viewer' vê todas as abas menos Status Executivo,
+   somente leitura. 'status_exec' só vê a aba Status Executivo (as demais
+   ficam ocultas), também somente leitura. 'viewer' é o padrão "seguro" —
+   se a consulta ao papel falhar por qualquer motivo, a pessoa cai como
+   somente leitura sem acesso a Status Executivo, nunca como editora. */
 let currentUserRole = 'viewer';
 async function loadUserRole() {
   if (!SUPABASE_READY) { currentUserRole = 'editor'; return; }
   const { data: { user } } = await sb.auth.getUser();
   if (!user) { currentUserRole = 'viewer'; return; }
   const { data, error } = await sb.from('user_roles').select('role').eq('user_id', user.id).single();
-  currentUserRole = (!error && data && data.role === 'editor') ? 'editor' : 'viewer';
+  currentUserRole = (!error && data && data.role) ? data.role : 'viewer';
 }
 const READ_ONLY_ALLOWED_IDS = [];
 function applyReadOnlyMode() {
@@ -1169,6 +1171,23 @@ function applyReadOnlyMode() {
     btn.style.opacity = '0.45';
     btn.style.cursor = 'not-allowed';
   });
+}
+/* ═══ VISIBILIDADE DE ABAS por papel ═══
+   'status_exec' só enxerga a aba Status Executivo (demais abas ficam
+   ocultas). 'editor' e 'viewer' perdem a aba Status Executivo (ela some
+   do menu e, se for a aba ativa no boot, cai automaticamente para
+   Dashboard de Programa). Isso é uma restrição de interface — a leitura
+   dos dados no Supabase continua liberada para qualquer autenticado (ver
+   política de RLS do kv_store); não é um isolamento a nível de dados. */
+function applyTabVisibility() {
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  if (currentUserRole === 'status_exec') {
+    tabBtns.forEach((btn,i) => { btn.style.display = TABS[i]==='status' ? '' : 'none'; });
+    if (!document.getElementById('view-status').classList.contains('active')) switchTab('status');
+  } else {
+    tabBtns.forEach((btn,i) => { if (TABS[i]==='status') btn.style.display='none'; });
+    if (document.getElementById('view-status').classList.contains('active')) switchTab('dashboard');
+  }
 }
 
 /* ═══ STORAGE ═══
@@ -2675,6 +2694,7 @@ function boot(){
   buildGantt();
   buildRdtTable();
   wireAutoGrowTextareas();
+  applyTabVisibility();
   applyReadOnlyMode();
 }
 if (SUPABASE_READY) { fbInit(); } else { boot(); }
