@@ -2598,8 +2598,8 @@ function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',TABS[i]===tab));
   TABS.forEach(t=>document.getElementById('view-'+t).classList.toggle('active',t===tab));
   if(tab==='gantt')     buildGantt();
-  if(tab==='status')  { buildStatusExec(); restoreDashHeader(); }
-  if(tab==='dashboard'){ buildDashboard(); restoreDashHeader(); }
+  if(tab==='status')  { buildStatusExec(); restoreDashHeader(); buildRdtTable(); }
+  if(tab==='dashboard'){ buildDashboard(); restoreDashHeader(); buildRdtTable(); }
 }
 
 /* ═══ DASH HEADER FUNCTIONS ═══ */
