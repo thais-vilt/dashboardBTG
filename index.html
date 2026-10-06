@@ -352,6 +352,12 @@ main { padding:28px 36px 64px; max-width:1240px; margin:0 auto; }
 .pdf-exporting .btn-add-squad,
 .pdf-exporting .se-meta-add-btn { display:none !important; }
 .pdf-exporting .gantt-outer { max-height:none !important; overflow:visible !important; }
+.pdf-exporting .gantt-scroll { overflow:visible !important; }
+#view-gantt.pdf-exporting { background:var(--bg); padding:20px; box-sizing:border-box; }
+.pdf-only { display:none; }
+.pdf-exporting .pdf-only { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px; }
+.pdf-only-title { font-size:16px; font-weight:800; color:#fff; letter-spacing:-.01em; }
+.pdf-only-date { font-size:11px; color:var(--text3); }
 .dash-header-main { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:18px 24px 14px; }
 .dash-header-title-block { display:flex; flex-direction:column; gap:3px; }
 .dash-header-eyebrow { font-size:9px; font-weight:700; color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:.09em; }
@@ -1102,6 +1108,14 @@ Pendente: alinhamento de escopo financeiro Fase II.</textarea>
 
   <!-- GANTT -->
   <div id="view-gantt" class="view">
+    <!-- ── Barra de ações: exportar PDF ── -->
+    <div class="dash-toolbar">
+      <button class="btn-download-pdf" id="btn-download-pdf-gantt" onclick="downloadGanttPDF()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="width:13px;height:13px;"><path d="M8 1v9"/><path d="M4.5 6.5 8 10l3.5-3.5"/><path d="M2 12.5v1a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5v-1"/></svg>
+        <span id="btn-download-pdf-gantt-label">Baixar PDF</span>
+      </button>
+    </div>
+    <div class="pdf-only"><span class="pdf-only-title">BTG — Timeline / Gantt</span><span class="pdf-only-date" id="gantt-pdf-date"></span></div>
     <div class="gantt-container">
       <div class="gantt-outer"><div class="gantt-scroll"><div class="gantt-grid" id="gantt-grid"></div></div></div>
       <div class="gantt-legend" id="gantt-legend"></div>
@@ -2222,9 +2236,38 @@ function downloadTabPDF(viewId, titleId, defaultName, btnId, lblId){
     pagebreak: { mode: ['avoid-all'], avoid: ['.dash-card','.se-header-strip','.dash-header-strip','.squad-card','.se-progress-card','.epic-card'] }
   };
 
-  html2pdf().set(opt).from(el).save()
+  return html2pdf().set(opt).from(el).save()
     .catch(()=>{ alert('Ocorreu um erro ao gerar o PDF. Tente novamente.'); })
     .finally(restore);
+}
+
+/* PDF da aba Gantt: exporta TODAS as linhas (épicos, subgrupos e tarefas),
+   mesmo as que estão recolhidas ou além da rolagem vertical da tela. As
+   linhas recolhidas são expandidas só durante a captura e depois voltam
+   ao estado anterior. */
+function downloadGanttPDF(){
+  const view=document.getElementById('view-gantt');
+  const grid=document.getElementById('gantt-grid');
+  if(!view||!grid) return;
+  const hiddenRows=Array.from(grid.querySelectorAll('.gantt-row.hidden'));
+  hiddenRows.forEach(r=>r.classList.remove('hidden'));
+  const collapsedTogs=Array.from(grid.querySelectorAll('.g-tog:not(.exp)'));
+  collapsedTogs.forEach(t=>t.classList.add('exp'));
+  const dateEl=document.getElementById('gantt-pdf-date');
+  if(dateEl) dateEl.textContent='Exportado em '+new Date().toLocaleDateString('pt-BR');
+  /* durante a captura a aba ganha 20px de margem de cada lado (fundo escuro)
+     e, se a janela for mais estreita que a grade, é alargada o bastante
+     para as colunas dos meses não saírem cortadas */
+  const prevWidth=view.style.width;
+  const overflowX=Math.max(0,grid.scrollWidth-grid.parentElement.clientWidth);
+  view.style.width=(view.offsetWidth+overflowX+40)+'px';
+  const cleanup=()=>{
+    view.style.width=prevWidth;
+    hiddenRows.forEach(r=>r.classList.add('hidden'));
+    collapsedTogs.forEach(t=>t.classList.remove('exp'));
+  };
+  const p=downloadTabPDF('view-gantt','gantt-title','gantt-btg','btn-download-pdf-gantt','btn-download-pdf-gantt-label');
+  if(p&&typeof p.finally==='function') p.finally(cleanup); else cleanup();
 }
 
 /* ═══ DASHBOARD ═══ */
