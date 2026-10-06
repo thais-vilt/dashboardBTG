@@ -90,6 +90,9 @@ header {
 .logo-sep  { font-size:14px; color:rgba(255,255,255,0.20); margin:0 10px; font-weight:300; }
 .logo-sub  { font-size:12px; font-weight:400; color:rgba(255,255,255,0.40); letter-spacing:0.01em; }
 .header-meta { font-size:11px; font-weight:500; color:var(--text3); }
+.header-right { display:flex; align-items:center; gap:16px; }
+.btn-logout { background:transparent; color:var(--text2); border:1px solid var(--border2); border-radius:var(--r-sm); padding:6px 14px; font-size:11px; font-weight:700; cursor:pointer; letter-spacing:.02em; transition:background .15s,color .15s,border-color .15s; }
+.btn-logout:hover { background:var(--surface2); color:#fff; border-color:var(--btg-lt); }
 
 /* ══ TABS ══ */
 .tabs-bar {
@@ -674,7 +677,10 @@ footer { text-align:center; padding:22px 36px; font-size:11px; color:var(--text3
       <span class="logo-sub">Dashboard de Programa</span>
     </div>
   </a>
-  <span class="header-meta" id="updated-date"></span>
+  <div class="header-right">
+    <span class="header-meta" id="updated-date"></span>
+    <button type="button" class="btn-logout" id="btn-logout" onclick="doLogout()" style="display:none;">Sair</button>
+  </div>
 </header>
 
 <!-- ══ TABS ══ -->
@@ -1167,6 +1173,7 @@ function applyReadOnlyMode() {
     if (btn.classList.contains('tab-btn')) return;
     if (btn.classList.contains('btn-download-pdf')) return;
     if (btn.classList.contains('btn-squad-toggle')) return;
+    if (btn.classList.contains('btn-logout')) return;
     btn.disabled = true;
     btn.style.opacity = '0.45';
     btn.style.cursor = 'not-allowed';
@@ -1255,6 +1262,13 @@ async function fbStartSync(){
   await loadUserRole();
   fbHideLock();
   boot();
+}
+/* scope:'local' encerra a sessão só neste navegador. O padrão ('global')
+   revogaria as sessões de todo mundo que usa o mesmo login compartilhado. */
+async function doLogout(){
+  const btn=document.getElementById('btn-logout'); if(btn) btn.disabled=true;
+  try{ await sb.auth.signOut({scope:'local'}); }catch(e){ console.error('Falha ao sair:',e); }
+  location.reload();
 }
 async function fbInit(){
   document.getElementById('fb-lock-btn').addEventListener('click', fbDoLogin);
@@ -2687,6 +2701,7 @@ function boot(){
   const d=new Date(),months=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   document.getElementById('updated-date').textContent=`Atualizado em ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
   document.getElementById('footer-txt').textContent=`BTG DCM DTTD — Relatórios de Programa · Exportado em ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  const logoutBtn=document.getElementById('btn-logout'); if(logoutBtn) logoutBtn.style.display = SUPABASE_READY ? '' : 'none';
   buildAllSquads();
   buildAllMetaExtra();
   restoreDashHeader();
