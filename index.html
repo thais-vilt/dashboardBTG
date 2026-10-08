@@ -788,6 +788,19 @@ footer { text-align:center; padding:22px 36px; font-size:11px; color:var(--text3
       </div>
     </div>
 
+    <!-- ── Indicadores de Sucesso/Objetivo (campo de texto editável, mesmo
+         modelo dos blocos Próximos Passos e Atualizações) ── -->
+    <div style="margin-bottom:16px;">
+      <div class="se-card">
+        <div class="se-card-header"><span class="se-card-title">Indicadores de Sucesso/Objetivo</span></div>
+        <textarea class="se-textarea" id="se-success-indicators" placeholder="Descreva os indicadores de sucesso e os objetivos do programa..."></textarea>
+        <div class="se-text-save-row">
+          <span class="saved-note" id="se-success-note">✓ Salvo</span>
+          <button class="btn-save-block" onclick="saveTextBlock('se-success-indicators','btg_dcm_success_indicators_se','se-success-note')">Salvar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Row 1: Mini Gantt + Orçamento ── -->
     <div class="se-row2" style="margin-bottom:16px;">
 
@@ -2041,6 +2054,7 @@ function restoreSharedBlocks() {
   /* Cada bloco de texto agora é independente por aba — cada um lê da sua
      própria chave de armazenamento, sem espelhar para a outra aba. */
   const fields = [
+    ['se-success-indicators', 'btg_dcm_success_indicators_se'],
     ['se-next-steps',   'btg_dcm_next_steps_se'],
     ['dash-next-steps', 'btg_dcm_next_steps_dash'],
     ['se-decisions',    'btg_dcm_decisions_se'],
