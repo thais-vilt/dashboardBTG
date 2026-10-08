@@ -126,6 +126,7 @@ main { padding:28px 36px 64px; max-width:1240px; margin:0 auto; }
 /* ══ SAVED NOTE ══ */
 .saved-note { font-size:11px; font-weight:600; color:var(--green); opacity:0; transition:opacity .3s; }
 .saved-note.show { opacity:1; }
+.saved-note.error { color:#FF8A93; }
 
 /* ══ SQUAD WIDGET ══ */
 .squad-card {
@@ -1238,14 +1239,16 @@ const ST={
     if (SUPABASE_READY) { const v=_fbCache[k]; return (v!==undefined&&v!==null)?v:d; }
     try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}
   },
+  /* devolve uma Promise com {error} para quem quiser confirmar a gravação */
   set(k,v){
     if (SUPABASE_READY) {
       _fbCache[k]=v;
-      sb.from('kv_store').upsert({key:k,value:v,updated_at:new Date().toISOString()})
-        .then(({error})=>{ if(error) console.error('Supabase save falhou:',error); });
-      return;
+      return sb.from('kv_store').upsert({key:k,value:v,updated_at:new Date().toISOString()})
+        .then(({error})=>{ if(error) console.error('Supabase save falhou:',error); return {error}; })
+        .catch(error=>{ console.error('Supabase save falhou:',error); return {error}; });
     }
     try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}
+    return Promise.resolve({error:null});
   }
 };
 function fmtDate(d) { if(!d) return '—'; try{const [y,m,dd]=d.split('-');return `${dd}/${m}/${y}`;}catch(e){return d;} }
@@ -1546,12 +1549,50 @@ function saveBudget() {
   const n = document.getElementById('budget-saved-note');
   if (n) { n.classList.add('show'); setTimeout(()=>n.classList.remove('show'),2500); }
 }
-function saveTextBlock(fieldId, storageKey, noteId) {
-  const el = document.getElementById(fieldId);
-  if (el) ST.set(storageKey, el.value);
+/* Aviso ao lado do botão Salvar: "✓ Salvo" só aparece quando o banco
+   confirmou a gravação; se falhar, mostra o erro em vermelho. */
+function flashSaveNote(noteId, error) {
   const n = document.getElementById(noteId);
-  if (n) { n.classList.add('show'); setTimeout(()=>n.classList.remove('show'),2500); }
+  if (!n) return;
+  if (!n.dataset.okText) n.dataset.okText = n.textContent;
+  const expired = error && (error.status===401 || /jwt|expired|not authenticated/i.test(error.message||''));
+  n.textContent = error ? (expired ? '⚠ Sessão expirada — clique em Sair e entre de novo' : '⚠ Não foi possível salvar') : n.dataset.okText;
+  n.classList.toggle('error', !!error);
+  n.classList.add('show');
+  clearTimeout(n._t);
+  n._t = setTimeout(()=>n.classList.remove('show'), error ? 8000 : 2500);
 }
+async function saveTextBlock(fieldId, storageKey, noteId) {
+  const el = document.getElementById(fieldId);
+  if (!el) return;
+  const res = await ST.set(storageKey, el.value);
+  el._dirty = !!(res && res.error);
+  flashSaveNote(noteId, res && res.error);
+}
+
+/* ═══ SALVAMENTO AUTOMÁTICO dos blocos de texto ═══
+   Ao sair do campo (blur) o texto é gravado sozinho, em todas as abas —
+   não é preciso clicar em Salvar (o botão continua funcionando). Também
+   grava quando a aba do navegador é minimizada/fechada, caso ainda haja
+   texto digitado e não gravado. */
+const TEXT_BLOCKS = {
+  'se-success-indicators': ['btg_dcm_success_indicators_se', 'se-success-note'],
+  'se-next-steps':         ['btg_dcm_next_steps_se',          'next-saved-note'],
+  'se-commercial':         ['btg_dcm_commercial',             'comm-saved-note'],
+  'se-decisions':          ['btg_dcm_decisions_se',           'se-decisions-note'],
+  'dash-updates':          ['btg_dcm_updates',                'dash-updates-note'],
+  'dash-next-steps':       ['btg_dcm_next_steps_dash',        'dash-next-note'],
+  'dash-decisions':        ['btg_dcm_decisions_dash',         'dash-decisions-note'],
+};
+function autoSaveTextBlock(id) {
+  const cfg = TEXT_BLOCKS[id]; const el = document.getElementById(id);
+  if (!cfg || !el || el.disabled || !el._dirty) return;
+  saveTextBlock(id, cfg[0], cfg[1]);
+}
+document.addEventListener('input', e => { if (e.target && TEXT_BLOCKS[e.target.id]) e.target._dirty = true; });
+document.addEventListener('focusout', e => { if (e.target && TEXT_BLOCKS[e.target.id]) autoSaveTextBlock(e.target.id); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') Object.keys(TEXT_BLOCKS).forEach(autoSaveTextBlock); });
+window.addEventListener('pagehide', () => { Object.keys(TEXT_BLOCKS).forEach(autoSaveTextBlock); });
 
 /* ═══ TEXTAREAS DINÂMICAS — crescem para caber todo o conteúdo ═══ */
 function autoGrowTextarea(el){
